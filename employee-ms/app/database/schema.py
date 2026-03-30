@@ -43,7 +43,11 @@ class Department(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False, unique=True)
     description = db.Column(db.String(255), nullable=True)
-    manager_id = db.Column(db.Integer, db.ForeignKey("employees.id"), nullable=True)
+    manager_id = db.Column(
+        db.Integer,
+        db.ForeignKey("employees.id", use_alter=True, name="fk_department_manager"),
+        nullable=True
+    )
 
 
 class EmployeeRole(db.Model):

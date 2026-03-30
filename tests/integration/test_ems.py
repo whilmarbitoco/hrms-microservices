@@ -1,4 +1,4 @@
-import tests.http.client as http
+import tests.integration.client as http
 
 state = {}
 

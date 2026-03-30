@@ -41,6 +41,7 @@ class DevelopmentConfig(BaseConfig):
 
 class ProductionConfig(BaseConfig):
     DEBUG = False
+    TALISMAN_FORCE_HTTPS = os.getenv("TALISMAN_FORCE_HTTPS", "true").lower() == "true"
 
     def __init__(self):
         missing = [v for v in ("SECRET_KEY", "JWT_SECRET_KEY", "DATABASE_URL") if not os.getenv(v)]

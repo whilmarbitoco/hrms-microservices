@@ -6,12 +6,12 @@ Runs real HTTP requests against the live stack through NGINX.
 Prerequisites:
     1. docker compose up --build
     2. python tests/seed.py
-    3. export HRMS_TOKEN="<token from seed output>"
+    3. set HRMS_TOKEN=<token from seed output>   (Windows)
+       export HRMS_TOKEN=<token>                 (Linux/Mac)
 
-Usage:
-    python -m tests.http.runner
-    or
-    python tests/http/runner.py
+Usage (run from project root):
+    call tests\.venv\Scripts\activate.bat
+    python -m tests.integration.runner
 """
 
 import sys
@@ -19,11 +19,11 @@ import os
 import time
 from colorama import init, Fore, Style
 
-init(autoreset=True)
+init(autoreset=True, convert=True)
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
-from tests.http import test_ems, test_pms, test_lms
+from tests.integration import test_ems, test_pms, test_lms
 
 SUITES = [
     ("Employee Management Service (EMS)", test_ems.TESTS),
@@ -45,15 +45,15 @@ def run_suite(suite_name, tests):
         name = test_fn.__name__.replace("test_", "").replace("_", " ")
         try:
             test_fn()
-            print(f"  {Fore.GREEN}✓{Style.RESET_ALL} {name}")
+            print(f"  {Fore.GREEN}[PASS]{Style.RESET_ALL} {name}")
             passed += 1
         except AssertionError as e:
-            print(f"  {Fore.RED}✗{Style.RESET_ALL} {name}")
+            print(f"  {Fore.RED}[FAIL]{Style.RESET_ALL} {name}")
             print(f"    {Fore.RED}{e}{Style.RESET_ALL}")
             failed += 1
             failures.append((name, str(e)))
         except Exception as e:
-            print(f"  {Fore.RED}✗{Style.RESET_ALL} {name}")
+            print(f"  {Fore.RED}[FAIL]{Style.RESET_ALL} {name}")
             print(f"    {Fore.RED}Unexpected error: {e}{Style.RESET_ALL}")
             failed += 1
             failures.append((name, str(e)))

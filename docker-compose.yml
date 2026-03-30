@@ -10,6 +10,8 @@ services:
       POSTGRES_PASSWORD: hrms_secret
     volumes:
       - employee_db_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
     networks:
       - hrms_network
     healthcheck:
@@ -26,6 +28,8 @@ services:
       POSTGRES_PASSWORD: hrms_secret
     volumes:
       - payroll_db_data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
     networks:
       - hrms_network
     healthcheck:
@@ -42,6 +46,8 @@ services:
       POSTGRES_PASSWORD: hrms_secret
     volumes:
       - leave_db_data:/var/lib/postgresql/data
+    ports:
+      - "5435:5432"
     networks:
       - hrms_network
     healthcheck:
@@ -84,6 +90,7 @@ services:
       RABBITMQ_USER: hrms
       RABBITMQ_PASS: hrms_secret
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      TALISMAN_FORCE_HTTPS: "false"
     depends_on:
       employee-db:
         condition: service_healthy
@@ -106,6 +113,7 @@ services:
       RABBITMQ_USER: hrms
       RABBITMQ_PASS: hrms_secret
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      TALISMAN_FORCE_HTTPS: "false"
     depends_on:
       payroll-db:
         condition: service_healthy
@@ -128,6 +136,7 @@ services:
       RABBITMQ_USER: hrms
       RABBITMQ_PASS: hrms_secret
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      TALISMAN_FORCE_HTTPS: "false"
     depends_on:
       leave-db:
         condition: service_healthy
