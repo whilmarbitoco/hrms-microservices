@@ -84,7 +84,7 @@ class EmployeeHistory(db.Model):
     __tablename__ = "employee_history"
 
     id = db.Column(db.Integer, primary_key=True)
-    employee_id = db.Column(db.Integer, db.ForeignKey("employees.id"), nullable=False)
+    employee_id = db.Column(db.Integer, db.ForeignKey("employees.id", ondelete="CASCADE"), nullable=False)
     action = db.Column(db.String(50), nullable=False)
     changed_by = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
     metadata_ = db.Column("metadata", db.JSON, nullable=True)

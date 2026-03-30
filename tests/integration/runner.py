@@ -27,8 +27,8 @@ from tests.integration import test_ems, test_pms, test_lms
 
 SUITES = [
     ("Employee Management Service (EMS)", test_ems.TESTS),
-    ("Payroll Management Service (PMS)",  test_pms.TESTS),
-    ("Leave Management Service (LMS)",    test_lms.TESTS),
+    ("Payroll Management Service (PMS)", test_pms.TESTS),
+    ("Leave Management Service (LMS)", test_lms.TESTS),
 ]
 
 
@@ -64,7 +64,9 @@ def run_suite(suite_name, tests):
 def main():
     if not os.getenv("HRMS_TOKEN"):
         print(f"{Fore.RED}Error: HRMS_TOKEN environment variable is not set.")
-        print(f"Run 'python tests/seed.py' first and export the token.{Style.RESET_ALL}")
+        print(
+            f"Run 'python tests/seed.py' first and export the token.{Style.RESET_ALL}"
+        )
         sys.exit(1)
 
     print(f"\n{Fore.CYAN}{'=' * 60}")
@@ -77,11 +79,19 @@ def main():
     total_failed = 0
     all_failures = []
 
-    for suite_name, tests in SUITES:
+    for i, (suite_name, tests) in enumerate(SUITES):
         passed, failed, failures = run_suite(suite_name, tests)
         total_passed += passed
         total_failed += failed
         all_failures.extend([(suite_name, name, err) for name, err in failures])
+
+        # After EMS suite, wait for RabbitMQ events to propagate to PMS and LMS caches
+        if i == 0 and i < len(SUITES) - 1:
+            wait = 10
+            print(
+                f"\n{Fore.CYAN}Waiting {wait}s for RabbitMQ events to propagate...{Style.RESET_ALL}"
+            )
+            time.sleep(wait)
 
     elapsed = time.time() - start
 

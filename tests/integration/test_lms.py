@@ -113,17 +113,37 @@ def test_request_auth_guard():
 
 
 def test_request_create():
-    # Seed a balance directly if needed — assumes EMP001 has balance from event or manual seed
-    balances = http.get("/leave/balances/EMP001").json()
-    if not balances:
-        # Manually initialize via accrue
-        http.post("/leave/balances/accrue", json={"employee_id": "EMP001"})
-        balances = http.get("/leave/balances/EMP001").json()
+    # Find any active employee in cache
+    employees = http.get("/leave/employees").json()
+    active = next((e for e in employees if e["status"] == "active"), None)
+    assert active is not None, "No active employee found in LMS cache"
+    emp_id = active["employee_id"]
+    state["test_emp_id"] = emp_id
 
-    state["balance_id"] = balances[0]["id"] if balances else None
+    # Ensure a balance exists for this employee + policy by adjusting directly
+    # First accrue to initialize
+    http.post("/leave/balances/accrue", json={"employee_id": emp_id})
+
+    # Check if balance exists for our policy
+    balances = http.get(f"/leave/balances/{emp_id}").json()
+    policy_balance = next((b for b in balances if b["policy_id"] == state["policy_id"]), None)
+
+    if not policy_balance:
+        # No balance for this policy — skip by using a policy that has a balance
+        if balances:
+            state["policy_id"] = balances[0]["policy_id"]
+            policy_balance = balances[0]
+
+    assert policy_balance is not None, "No leave balance found for any policy"
+
+    # Ensure balance is sufficient (at least 3 days for our 3-day request)
+    if float(policy_balance["balance"]) < 3:
+        http.patch(f"/leave/balances/{policy_balance['id']}", json={"amount": "15.00", "reason": "Test seed"})
+
+    state["balance_id"] = policy_balance["id"]
 
     res = http.post("/leave/requests", json={
-        "employee_id": "EMP001",
+        "employee_id": emp_id,
         "policy_id": state["policy_id"],
         "start_date": "2025-06-02",
         "end_date": "2025-06-04",
@@ -160,7 +180,7 @@ def test_request_patch():
 
 def test_request_put():
     res = http.put(f"/leave/requests/{state['req_id']}", json={
-        "employee_id": "EMP001",
+        "employee_id": state["test_emp_id"],
         "policy_id": state["policy_id"],
         "start_date": "2025-06-02",
         "end_date": "2025-06-04",
@@ -194,7 +214,7 @@ def test_request_cancel_approved():
 
 def test_request_reject():
     res = http.post("/leave/requests", json={
-        "employee_id": "EMP001",
+        "employee_id": state["test_emp_id"],
         "policy_id": state["policy_id"],
         "start_date": "2025-07-07",
         "end_date": "2025-07-08",
@@ -207,7 +227,7 @@ def test_request_reject():
 
 def test_request_cancel_pending():
     res = http.post("/leave/requests", json={
-        "employee_id": "EMP001",
+        "employee_id": state["test_emp_id"],
         "policy_id": state["policy_id"],
         "start_date": "2025-08-04",
         "end_date": "2025-08-05",
@@ -220,7 +240,7 @@ def test_request_cancel_pending():
 
 def test_request_delete():
     res = http.post("/leave/requests", json={
-        "employee_id": "EMP001",
+        "employee_id": state["test_emp_id"],
         "policy_id": state["policy_id"],
         "start_date": "2025-09-01",
         "end_date": "2025-09-02",
@@ -232,7 +252,7 @@ def test_request_delete():
 
 def test_request_delete_approved_fails():
     res = http.post("/leave/requests", json={
-        "employee_id": "EMP001",
+        "employee_id": state["test_emp_id"],
         "policy_id": state["policy_id"],
         "start_date": "2025-10-06",
         "end_date": "2025-10-07",

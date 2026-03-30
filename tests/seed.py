@@ -154,9 +154,7 @@ def seed_service(service_name, db_url, permissions):
         cur.close()
         conn.close()
 
-        print(
-            f"{Fore.GREEN}  [OK] {len(permissions)} permissions seeded{Style.RESET_ALL}"
-        )
+        print(f"{Fore.GREEN}  [OK] {len(permissions)} permissions seeded{Style.RESET_ALL}")
         print(f"{Fore.GREEN}  [OK] admin role seeded{Style.RESET_ALL}")
         print(f"{Fore.GREEN}  [OK] admin user seeded (id={user_id}){Style.RESET_ALL}")
         return user_id
