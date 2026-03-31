@@ -8,12 +8,11 @@ class BasePolicy:
 
     Usage:
         class EmployeePolicy(BasePolicy):
-            def terminate(self, actor, employee):
-                self.authorize(actor, "employee.terminate")
-                if actor.role.name == "hr_manager" and actor.department_id != employee.department_id:
-                    raise ForbiddenError("You can only terminate employees in your department.")
+            def terminate(self, employee):
+                self.authorize("employee.terminate")
+                # contextual check using get_jwt() if needed
     """
 
-    def authorize(self, actor, permission: str):
-        if not has_permission(actor, permission):
+    def authorize(self, permission: str):
+        if not has_permission(permission):
             raise ForbiddenError()

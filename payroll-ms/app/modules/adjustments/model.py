@@ -32,4 +32,4 @@ class AdjustmentRead(Schema):
     type = fields.Str()
     amount = fields.Decimal(as_string=True)
     reason = fields.Str()
-    created_by = fields.Int()
+    created_by = fields.Str()

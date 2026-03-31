@@ -2,41 +2,6 @@ from app.extensions import db
 from datetime import datetime, timezone
 
 
-role_permissions = db.Table(
-    "role_permissions",
-    db.Column("role_id", db.Integer, db.ForeignKey("roles.id"), primary_key=True),
-    db.Column("permission_id", db.Integer, db.ForeignKey("permissions.id"), primary_key=True),
-)
-
-
-class Role(db.Model):
-    __tablename__ = "roles"
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False, unique=True)
-    description = db.Column(db.String(255), nullable=True)
-    permissions = db.relationship("Permission", secondary=role_permissions, lazy="joined")
-
-
-class Permission(db.Model):
-    __tablename__ = "permissions"
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False, unique=True)
-    description = db.Column(db.String(255), nullable=True)
-
-
-class User(db.Model):
-    __tablename__ = "users"
-
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(120), nullable=False, unique=True)
-    name = db.Column(db.String(120), nullable=False)
-    password_hash = db.Column(db.String(255), nullable=True)
-    role_id = db.Column(db.Integer, db.ForeignKey("roles.id"), nullable=True)
-    role = db.relationship("Role", lazy="joined")
-
-
 class EmployeeCache(db.Model):
     __tablename__ = "employee_cache"
 
@@ -82,7 +47,7 @@ class LeaveRequest(db.Model):
     days = db.Column(db.Numeric(6, 2), nullable=False)
     reason = db.Column(db.String(255), nullable=True)
     status = db.Column(db.String(20), nullable=False, default="pending")
-    reviewed_by = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    reviewed_by = db.Column(db.String(120), nullable=True)
     reviewed_at = db.Column(db.DateTime, nullable=True)
 
     policy = db.relationship("LeavePolicy", lazy="joined")

@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import get_jwt
 from marshmallow import ValidationError as MarshmallowValidationError
 from app.extensions import limiter
 from app.utils.sanitizer import sanitize_dict
@@ -77,8 +77,8 @@ def delete_request(id):
 @require_permission("leave_request.approve")
 @limiter.limit("10 per minute")
 def approve_request(id):
-    reviewer_id = int(get_jwt_identity())
-    return jsonify(read_schema.dump(service.approve(id, reviewer_id))), 200
+    reviewer = get_jwt().get("email", "unknown")
+    return jsonify(read_schema.dump(service.approve(id, reviewer))), 200
 
 
 @leave_requests_bp.route("/<int:id>/reject", methods=["POST"])
@@ -89,8 +89,8 @@ def reject_request(id):
         data = LeaveRequestReject().load(sanitize_dict(request.json or {}))
     except MarshmallowValidationError as e:
         raise ValidationError(message=e.messages)
-    reviewer_id = int(get_jwt_identity())
-    return jsonify(read_schema.dump(service.reject(id, data["reason"], reviewer_id))), 200
+    reviewer = get_jwt().get("email", "unknown")
+    return jsonify(read_schema.dump(service.reject(id, data["reason"], reviewer))), 200
 
 
 @leave_requests_bp.route("/<int:id>/cancel", methods=["POST"])

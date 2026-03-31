@@ -1,14 +1,12 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import get_jwt_identity
 from marshmallow import ValidationError as MarshmallowValidationError
-from app.extensions import db, limiter
+from app.extensions import limiter
 from app.utils.sanitizer import sanitize_dict
 from app.utils.permissions import require_permission
 from app.modules.departments.model import DepartmentCreate, DepartmentUpdate, DepartmentPatch, DepartmentRead
 from app.modules.departments.service import DepartmentService
 from app.modules.employees.model import EmployeeRead
 from app.errors.handlers import ValidationError
-from app.database.schema import User
 
 departments_bp = Blueprint("departments", __name__, url_prefix="/departments")
 

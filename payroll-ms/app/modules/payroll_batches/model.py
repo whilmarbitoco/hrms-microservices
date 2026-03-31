@@ -31,4 +31,4 @@ class PayrollBatchRead(Schema):
     period_start = fields.Date()
     period_end = fields.Date()
     status = fields.Str()
-    created_by = fields.Int()
+    created_by = fields.Str()

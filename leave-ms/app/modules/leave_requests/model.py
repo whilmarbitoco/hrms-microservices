@@ -42,6 +42,6 @@ class LeaveRequestRead(Schema):
     days = fields.Decimal(as_string=True)
     reason = fields.Str()
     status = fields.Str()
-    reviewed_by = fields.Int()
+    reviewed_by = fields.Str()
     reviewed_at = fields.DateTime()
     policy = fields.Nested(PolicyNested)

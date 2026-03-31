@@ -70,6 +70,6 @@ class EmployeeRead(Schema):
 class EmployeeHistoryRead(Schema):
     id = fields.Int()
     action = fields.Str()
-    changed_by = fields.Int()
+    changed_by = fields.Str()
     metadata_ = fields.Dict(attribute="metadata_")
     created_at = fields.DateTime()

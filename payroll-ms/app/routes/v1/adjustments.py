@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import get_jwt
 from marshmallow import ValidationError as MarshmallowValidationError
 from app.extensions import limiter
 from app.utils.sanitizer import sanitize_dict
@@ -37,7 +37,7 @@ def create_adjustment():
         data = AdjustmentCreate().load(sanitize_dict(request.json or {}))
     except MarshmallowValidationError as e:
         raise ValidationError(message=e.messages)
-    created_by = int(get_jwt_identity())
+    created_by = get_jwt().get("email", "unknown")
     return jsonify(read_schema.dump(service.create(created_by=created_by, **data))), 201
 
 

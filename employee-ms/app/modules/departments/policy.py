@@ -2,11 +2,11 @@ from app.utils.policy import BasePolicy
 
 
 class DepartmentPolicy(BasePolicy):
-    def create(self, actor):
-        self.authorize(actor, "department.create")
+    def create(self):
+        self.authorize("department.create")
 
-    def update(self, actor):
-        self.authorize(actor, "department.update")
+    def update(self):
+        self.authorize("department.update")
 
-    def delete(self, actor):
-        self.authorize(actor, "department.delete")
+    def delete(self):
+        self.authorize("department.delete")

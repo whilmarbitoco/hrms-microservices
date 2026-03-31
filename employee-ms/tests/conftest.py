@@ -5,7 +5,6 @@ os.environ["FLASK_ENV"] = "testing"
 
 from app import create_app
 from app.extensions import db as _db
-from app.database.schema import User, Role, Permission
 from flask_jwt_extended import create_access_token
 
 EMS_PERMISSIONS = [
@@ -33,17 +32,14 @@ def client(app):
 @pytest.fixture(scope="session")
 def auth_headers(app):
     with app.app_context():
-        permissions = [Permission(name=p, description=p) for p in EMS_PERMISSIONS]
-        _db.session.add_all(permissions)
-        _db.session.flush()
-
-        role = Role(name="admin", description="Full access", permissions=permissions)
-        _db.session.add(role)
-        _db.session.flush()
-
-        user = User(name="Admin User", email="admin@ems.com", role=role)
-        _db.session.add(user)
-        _db.session.commit()
-
-        token = create_access_token(identity=str(user.id))
+        token = create_access_token(
+            identity="1",
+            additional_claims={
+                "email": "admin@ems.com",
+                "role": "admin",
+                "employee_id": None,
+                "is_active": True,
+                "permissions": EMS_PERMISSIONS,
+            }
+        )
         return {"Authorization": f"Bearer {token}"}

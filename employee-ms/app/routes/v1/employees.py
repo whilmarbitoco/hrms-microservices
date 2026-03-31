@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import get_jwt
 from marshmallow import ValidationError as MarshmallowValidationError
-from app.extensions import db, limiter
+from app.extensions import limiter
 from app.utils.sanitizer import sanitize_dict
 from app.utils.permissions import require_permission
 from app.modules.employees.model import (
@@ -10,7 +10,6 @@ from app.modules.employees.model import (
 )
 from app.modules.employees.service import EmployeeService
 from app.errors.handlers import ValidationError
-from app.database.schema import User
 
 employees_bp = Blueprint("employees", __name__, url_prefix="/employees")
 
@@ -42,8 +41,8 @@ def create_employee():
         data = EmployeeCreate().load(sanitize_dict(request.json or {}))
     except MarshmallowValidationError as e:
         raise ValidationError(message=e.messages)
-    actor_id = int(get_jwt_identity())
-    return jsonify(read_schema.dump(service.create(actor_id=actor_id, **data))), 201
+    actor = get_jwt().get("email", "unknown")
+    return jsonify(read_schema.dump(service.create(actor_id=actor, **data))), 201
 
 
 @employees_bp.route("/<int:id>", methods=["PUT"])
@@ -54,8 +53,8 @@ def update_employee(id):
         data = EmployeeUpdate().load(sanitize_dict(request.json or {}))
     except MarshmallowValidationError as e:
         raise ValidationError(message=e.messages)
-    actor_id = int(get_jwt_identity())
-    return jsonify(read_schema.dump(service.update(id, data, actor_id))), 200
+    actor = get_jwt().get("email", "unknown")
+    return jsonify(read_schema.dump(service.update(id, data, actor))), 200
 
 
 @employees_bp.route("/<int:id>", methods=["PATCH"])
@@ -66,8 +65,8 @@ def patch_employee(id):
         data = EmployeePatch().load(sanitize_dict(request.json or {}))
     except MarshmallowValidationError as e:
         raise ValidationError(message=e.messages)
-    actor_id = int(get_jwt_identity())
-    return jsonify(read_schema.dump(service.update(id, data, actor_id))), 200
+    actor = get_jwt().get("email", "unknown")
+    return jsonify(read_schema.dump(service.update(id, data, actor))), 200
 
 
 @employees_bp.route("/<int:id>", methods=["DELETE"])
@@ -86,8 +85,8 @@ def terminate_employee(id):
         data = EmployeeTerminate().load(sanitize_dict(request.json or {}))
     except MarshmallowValidationError as e:
         raise ValidationError(message=e.messages)
-    actor_id = int(get_jwt_identity())
-    return jsonify(read_schema.dump(service.terminate(id, actor_id=actor_id, **data))), 200
+    actor = get_jwt().get("email", "unknown")
+    return jsonify(read_schema.dump(service.terminate(id, actor_id=actor, **data))), 200
 
 
 @employees_bp.route("/<int:id>/rehire", methods=["POST"])
@@ -98,8 +97,8 @@ def rehire_employee(id):
         data = EmployeeRehire().load(sanitize_dict(request.json or {}))
     except MarshmallowValidationError as e:
         raise ValidationError(message=e.messages)
-    actor_id = int(get_jwt_identity())
-    return jsonify(read_schema.dump(service.rehire(id, actor_id=actor_id, **data))), 200
+    actor = get_jwt().get("email", "unknown")
+    return jsonify(read_schema.dump(service.rehire(id, actor_id=actor, **data))), 200
 
 
 @employees_bp.route("/<int:id>/history", methods=["GET"])
