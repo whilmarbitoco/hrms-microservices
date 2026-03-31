@@ -1,20 +1,15 @@
 """
 HRMS Seeder
 -----------
-Seeds roles, permissions, and an admin test user into all 3 service databases.
-Generates and prints a JWT token for use with the HTTP tester.
+Seeds the auth-ms database with roles, permissions, and an admin user.
+Generates a JWT token for use with the HTTP tester and Postman.
 
 Usage:
-    docker compose run --rm employee-ms python -c "
-        import sys; sys.path.insert(0, '.')
-    "
-
-Or run directly against each DB:
     python tests/seed.py
 
 Requires the .env file at the project root with:
     JWT_SECRET_KEY=...
-    (DB connection strings are read from env or defaults)
+    AUTH_DB_URL=postgresql://hrms:hrms_secret@localhost:5436/auth_db
 """
 
 import os
@@ -31,179 +26,190 @@ load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
 
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "change-this-to-a-strong-jwt-secret")
 
-DATABASES = {
-    "employee-ms": os.getenv(
-        "EMPLOYEE_DB_URL", "postgresql://hrms:hrms_secret@localhost:5432/employee_db"
-    ),
-    "payroll-ms": os.getenv(
-        "PAYROLL_DB_URL", "postgresql://hrms:hrms_secret@localhost:5432/payroll_db"
-    ),
-    "leave-ms": os.getenv(
-        "LEAVE_DB_URL", "postgresql://hrms:hrms_secret@localhost:5432/leave_db"
-    ),
-}
+AUTH_DB_URL = os.getenv("AUTH_DB_URL", "postgresql://hrms:hrms_secret@localhost:5436/auth_db")
 
-print(f"{Fore.YELLOW}{'='*50}")
-print("Database Connection Strings:")
-for service, db_url in DATABASES.items():
-    print(f"  {service}: {db_url}")
-print(f"{'='*50}{Style.RESET_ALL}")
+# ── All permissions across all services ───────────────────────────────────────
 
-# ── Permissions per service ────────────────────────────────────────────────
-
-EMS_PERMISSIONS = [
-    ("employee.view", "View employee records"),
-    ("employee.create", "Create employees"),
-    ("employee.update", "Update employees"),
-    ("employee.delete", "Delete employees"),
-    ("employee.terminate", "Terminate employees"),
-    ("employee.rehire", "Rehire employees"),
-    ("department.view", "View departments"),
-    ("department.create", "Create departments"),
-    ("department.update", "Update departments"),
-    ("department.delete", "Delete departments"),
-    ("employee_role.view", "View employee roles"),
+ALL_PERMISSIONS = [
+    # EMS
+    ("employee.view",        "View employee records"),
+    ("employee.create",      "Create employees"),
+    ("employee.update",      "Update employees"),
+    ("employee.delete",      "Delete employees"),
+    ("employee.terminate",   "Terminate employees"),
+    ("employee.rehire",      "Rehire employees"),
+    ("department.view",      "View departments"),
+    ("department.create",    "Create departments"),
+    ("department.update",    "Update departments"),
+    ("department.delete",    "Delete departments"),
+    ("employee_role.view",   "View employee roles"),
     ("employee_role.create", "Create employee roles"),
     ("employee_role.update", "Update employee roles"),
     ("employee_role.delete", "Delete employee roles"),
-]
-
-PMS_PERMISSIONS = [
-    ("payroll.view", "View payroll"),
-    ("payroll.create", "Create payroll batches"),
-    ("payroll.process", "Process payroll batches"),
-    ("payslip.view", "View payslips"),
-    ("salary_component.view", "View salary components"),
-    ("salary_component.create", "Create salary components"),
-    ("salary_component.update", "Update salary components"),
-    ("salary_component.delete", "Delete salary components"),
-    ("adjustment.view", "View adjustments"),
-    ("adjustment.create", "Create adjustments"),
-    ("adjustment.update", "Update adjustments"),
-    ("adjustment.delete", "Delete adjustments"),
-]
-
-LMS_PERMISSIONS = [
-    ("leave_request.view", "View leave requests"),
-    ("leave_request.create", "Create leave requests"),
-    ("leave_request.update", "Update leave requests"),
-    ("leave_request.delete", "Delete leave requests"),
+    # PMS
+    ("payroll.view",              "View payroll"),
+    ("payroll.create",            "Create payroll batches"),
+    ("payroll.process",           "Process payroll batches"),
+    ("payslip.view",              "View payslips"),
+    ("salary_component.view",     "View salary components"),
+    ("salary_component.create",   "Create salary components"),
+    ("salary_component.update",   "Update salary components"),
+    ("salary_component.delete",   "Delete salary components"),
+    ("adjustment.view",           "View adjustments"),
+    ("adjustment.create",         "Create adjustments"),
+    ("adjustment.update",         "Update adjustments"),
+    ("adjustment.delete",         "Delete adjustments"),
+    # LMS
+    ("leave_request.view",    "View leave requests"),
+    ("leave_request.create",  "Create leave requests"),
+    ("leave_request.update",  "Update leave requests"),
+    ("leave_request.delete",  "Delete leave requests"),
     ("leave_request.approve", "Approve leave requests"),
-    ("leave_request.reject", "Reject leave requests"),
-    ("leave_request.cancel", "Cancel leave requests"),
-    ("leave_policy.view", "View leave policies"),
-    ("leave_policy.create", "Create leave policies"),
-    ("leave_policy.update", "Update leave policies"),
-    ("leave_policy.delete", "Delete leave policies"),
-    ("leave_balance.view", "View leave balances"),
-    ("leave_balance.adjust", "Adjust leave balances"),
+    ("leave_request.reject",  "Reject leave requests"),
+    ("leave_request.cancel",  "Cancel leave requests"),
+    ("leave_policy.view",     "View leave policies"),
+    ("leave_policy.create",   "Create leave policies"),
+    ("leave_policy.update",   "Update leave policies"),
+    ("leave_policy.delete",   "Delete leave policies"),
+    ("leave_balance.view",    "View leave balances"),
+    ("leave_balance.adjust",  "Adjust leave balances"),
+    # Auth
+    ("user.view",           "View users"),
+    ("user.create",         "Create users"),
+    ("user.assign_role",    "Assign roles to users"),
+    ("user.deactivate",     "Deactivate users"),
+    ("user.reactivate",     "Reactivate users"),
+    ("user.reset_password", "Reset user passwords"),
 ]
 
-SERVICE_PERMISSIONS = {
-    "employee-ms": EMS_PERMISSIONS,
-    "payroll-ms": PMS_PERMISSIONS,
-    "leave-ms": LMS_PERMISSIONS,
+ROLES = {
+    "admin": ALL_PERMISSIONS,
+    "hr_manager": [
+        "employee.view", "employee.create", "employee.update", "employee.delete",
+        "employee.terminate", "employee.rehire",
+        "department.view", "department.create", "department.update", "department.delete",
+        "employee_role.view", "employee_role.create", "employee_role.update",
+        "payroll.view", "payslip.view", "salary_component.view",
+        "leave_request.view", "leave_request.create", "leave_request.update",
+        "leave_request.delete", "leave_request.approve", "leave_request.reject",
+        "leave_request.cancel", "leave_policy.view", "leave_policy.create",
+        "leave_policy.update", "leave_policy.delete", "leave_balance.view", "leave_balance.adjust",
+        "user.view", "user.create", "user.deactivate", "user.reactivate", "user.reset_password",
+    ],
+    "payroll_officer": [
+        "employee.view", "department.view",
+        "payroll.view", "payroll.create", "payroll.process", "payslip.view",
+        "salary_component.view", "salary_component.create", "salary_component.update", "salary_component.delete",
+        "adjustment.view", "adjustment.create", "adjustment.update", "adjustment.delete",
+        "leave_request.view", "leave_balance.view",
+    ],
+    "employee": [
+        "employee.view",
+        "payslip.view",
+        "leave_request.view", "leave_request.create", "leave_request.update",
+        "leave_request.cancel", "leave_balance.view",
+    ],
 }
 
 
-def seed_service(service_name, db_url, permissions):
-    print(f"\n{Fore.CYAN}Seeding {service_name}...{Style.RESET_ALL}")
+def seed():
+    print(f"\n{Fore.YELLOW}{'='*50}")
+    print("  HRMS Seeder")
+    print(f"{'='*50}{Style.RESET_ALL}")
+    print(f"\n{Fore.CYAN}Connecting to auth-db: {AUTH_DB_URL}{Style.RESET_ALL}")
+
     try:
-        conn = psycopg2.connect(db_url)
+        conn = psycopg2.connect(AUTH_DB_URL)
         conn.autocommit = False
         cur = conn.cursor()
 
-        # Insert permissions
-        permission_ids = []
-        for name, description in permissions:
+        # Insert all permissions
+        print(f"\n{Fore.CYAN}Seeding permissions...{Style.RESET_ALL}")
+        perm_ids = {}
+        for name, description in ALL_PERMISSIONS:
             cur.execute(
                 "INSERT INTO permissions (name, description) VALUES (%s, %s) "
-                "ON CONFLICT (name) DO UPDATE SET description = EXCLUDED.description "
-                "RETURNING id",
+                "ON CONFLICT (name) DO UPDATE SET description = EXCLUDED.description RETURNING id",
                 (name, description),
             )
-            permission_ids.append(cur.fetchone()[0])
+            perm_ids[name] = cur.fetchone()[0]
+        print(f"{Fore.GREEN}  [OK] {len(ALL_PERMISSIONS)} permissions seeded{Style.RESET_ALL}")
 
-        # Insert admin role
-        cur.execute(
-            "INSERT INTO roles (name, description) VALUES (%s, %s) "
-            "ON CONFLICT (name) DO UPDATE SET description = EXCLUDED.description "
-            "RETURNING id",
-            ("admin", "Full access to all resources"),
-        )
-        role_id = cur.fetchone()[0]
-
-        # Link all permissions to admin role
-        for perm_id in permission_ids:
+        # Insert roles with their permissions
+        print(f"\n{Fore.CYAN}Seeding roles...{Style.RESET_ALL}")
+        role_ids = {}
+        for role_name, role_perms in ROLES.items():
             cur.execute(
-                "INSERT INTO role_permissions (role_id, permission_id) VALUES (%s, %s) "
-                "ON CONFLICT DO NOTHING",
-                (role_id, perm_id),
+                "INSERT INTO roles (name, description) VALUES (%s, %s) "
+                "ON CONFLICT (name) DO UPDATE SET description = EXCLUDED.description RETURNING id",
+                (role_name, f"{role_name} role"),
             )
+            role_id = cur.fetchone()[0]
+            role_ids[role_name] = role_id
+
+            # Clear existing role permissions and re-assign
+            cur.execute("DELETE FROM role_permissions WHERE role_id = %s", (role_id,))
+            for perm_name in role_perms:
+                if perm_name in perm_ids:
+                    cur.execute(
+                        "INSERT INTO role_permissions (role_id, permission_id) VALUES (%s, %s) ON CONFLICT DO NOTHING",
+                        (role_id, perm_ids[perm_name]),
+                    )
+            print(f"{Fore.GREEN}  [OK] {role_name} ({len(role_perms)} permissions){Style.RESET_ALL}")
 
         # Insert admin user
+        print(f"\n{Fore.CYAN}Seeding admin user...{Style.RESET_ALL}")
+        from werkzeug.security import generate_password_hash
         cur.execute(
-            "INSERT INTO users (name, email, role_id) VALUES (%s, %s, %s) "
-            "ON CONFLICT (email) DO UPDATE SET role_id = EXCLUDED.role_id "
-            "RETURNING id",
-            ("HRMS Admin", "admin@hrms.com", role_id),
+            "INSERT INTO users (name, email, password_hash, is_active, role_id) "
+            "VALUES (%s, %s, %s, %s, %s) "
+            "ON CONFLICT (email) DO UPDATE SET role_id = EXCLUDED.role_id, is_active = true RETURNING id",
+            ("HRMS Admin", "admin@hrms.com", generate_password_hash("Admin@1234"), True, role_ids["admin"]),
         )
         user_id = cur.fetchone()[0]
+        print(f"{Fore.GREEN}  [OK] admin@hrms.com seeded (id={user_id}){Style.RESET_ALL}")
 
         conn.commit()
         cur.close()
         conn.close()
 
-        print(f"{Fore.GREEN}  [OK] {len(permissions)} permissions seeded{Style.RESET_ALL}")
-        print(f"{Fore.GREEN}  [OK] admin role seeded{Style.RESET_ALL}")
-        print(f"{Fore.GREEN}  [OK] admin user seeded (id={user_id}){Style.RESET_ALL}")
-        return user_id
-
     except Exception as e:
-        print(f"{Fore.RED}  [FAIL] Failed to seed {service_name}: {e}{Style.RESET_ALL}")
+        print(f"{Fore.RED}  [FAIL] {e}{Style.RESET_ALL}")
         sys.exit(1)
 
+    # Generate token
+    token = generate_token(user_id, "admin", list(perm_ids.keys()))
 
-def generate_token(user_id: int) -> str:
+    print(f"\n{Fore.YELLOW}{'='*50}")
+    print("  Seeding Complete")
+    print(f"{'='*50}{Style.RESET_ALL}")
+    print(f"\n{Fore.GREEN}Admin credentials:{Style.RESET_ALL}")
+    print(f"  Email:    admin@hrms.com")
+    print(f"  Password: Admin@1234")
+    print(f"\n{Fore.GREEN}JWT Token (valid 24h):{Style.RESET_ALL}")
+    print(f"\n{token}\n")
+    print(f"{Fore.CYAN}Set this before running the HTTP tester:{Style.RESET_ALL}")
+    print(f"  set HRMS_TOKEN={token}")
+    print(f"  python -m tests.integration.runner\n")
+
+
+def generate_token(user_id: int, role: str, permissions: list) -> str:
     payload = {
         "sub": str(user_id),
         "fresh": False,
         "iat": datetime.datetime.now(datetime.timezone.utc),
         "nbf": datetime.datetime.now(datetime.timezone.utc),
-        "exp": datetime.datetime.now(datetime.timezone.utc)
-        + datetime.timedelta(days=1),
+        "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=1),
         "jti": str(uuid.uuid4()),
         "type": "access",
+        "email": "admin@hrms.com",
+        "role": role,
+        "employee_id": None,
+        "is_active": True,
+        "permissions": permissions,
     }
     return jwt.encode(payload, JWT_SECRET_KEY, algorithm="HS256")
 
 
-def main():
-    print(f"{Fore.YELLOW}{'='*50}")
-    print("  HRMS Seeder")
-    print(f"{'='*50}{Style.RESET_ALL}")
-
-    user_ids = {}
-    for service, db_url in DATABASES.items():
-        permissions = SERVICE_PERMISSIONS[service]
-        user_id = seed_service(service, db_url, permissions)
-        user_ids[service] = user_id
-
-    # All services share the same admin user id=1 in their own DBs
-    # Generate token using EMS user id (all will be 1 on fresh DBs)
-    token = generate_token(user_ids["employee-ms"])
-
-    print(f"\n{Fore.YELLOW}{'='*50}")
-    print("  Seeding Complete")
-    print(f"{'='*50}{Style.RESET_ALL}")
-    print(f"\n{Fore.GREEN}JWT Token (valid 24h):{Style.RESET_ALL}")
-    print(f"\n{token}\n")
-    print(
-        f"{Fore.CYAN}Set this in your environment before running the HTTP tester:{Style.RESET_ALL}"
-    )
-    print(f'  export HRMS_TOKEN="{token}"')
-    print(f"  python tests/http/runner.py\n")
-
-
 if __name__ == "__main__":
-    main()
+    seed()
