@@ -4,7 +4,7 @@
 
 **Project Status — March 31, 2026**
 
-You can read the api docs [here](ROUTES.md).
+You can read the api docs [here](ROUTES.md) or directly test the api here: `https://hrms-api.whilmarbitoco.qzz.io/`.
 
 ---
 
