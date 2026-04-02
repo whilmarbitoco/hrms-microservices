@@ -1,6 +1,7 @@
 version: "3"
 
 services:
+  # ── RabbitMQ ───────────────────────────────────────────────────────────────
   rabbitmq:
     image: rabbitmq:3.13-management-alpine
     environment:
@@ -15,6 +16,7 @@ services:
       timeout: 10s
       retries: 5
 
+  # ── Auth Microservice ───────────────────────────────────────────────────────
   auth-ms:
     build:
       context: ./auth-ms
@@ -31,11 +33,16 @@ services:
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASS: ${RABBITMQ_PASS}
       CORS_ORIGINS: ${CORS_ORIGINS}
-      TALISMAN_FORCE_HTTPS: "true"
-    ports:
-      - "5000"
+      TALISMAN_FORCE_HTTPS: "false"
     restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.auth-ms.rule=Host(`hrms-api.whilmarbitoco.qzz.io`) && PathPrefix(`/auth`)"
+      - "traefik.http.routers.auth-ms.entrypoints=websecure"
+      - "traefik.http.routers.auth-ms.tls.certresolver=letsencrypt"
+      - "traefik.http.services.auth-ms.loadbalancer.server.port=8000"
 
+  # ── Employee Microservice ───────────────────────────────────────────────────
   employee-ms:
     build:
       context: ./employee-ms
@@ -52,11 +59,16 @@ services:
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASS: ${RABBITMQ_PASS}
       CORS_ORIGINS: ${CORS_ORIGINS}
-      TALISMAN_FORCE_HTTPS: "true"
-    ports:
-      - "5000"
+      TALISMAN_FORCE_HTTPS: "false"
     restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.employee-ms.rule=Host(`hrms-api.whilmarbitoco.qzz.io`) && (PathPrefix(`/employees`) || PathPrefix(`/departments`) || PathPrefix(`/employee-roles`))"
+      - "traefik.http.routers.employee-ms.entrypoints=websecure"
+      - "traefik.http.routers.employee-ms.tls.certresolver=letsencrypt"
+      - "traefik.http.services.employee-ms.loadbalancer.server.port=8000"
 
+  # ── Payroll Microservice ────────────────────────────────────────────────────
   payroll-ms:
     build:
       context: ./payroll-ms
@@ -73,11 +85,16 @@ services:
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASS: ${RABBITMQ_PASS}
       CORS_ORIGINS: ${CORS_ORIGINS}
-      TALISMAN_FORCE_HTTPS: "true"
-    ports:
-      - "5000"
+      TALISMAN_FORCE_HTTPS: "false"
     restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.payroll-ms.rule=Host(`hrms-api.whilmarbitoco.qzz.io`) && PathPrefix(`/payroll`)"
+      - "traefik.http.routers.payroll-ms.entrypoints=websecure"
+      - "traefik.http.routers.payroll-ms.tls.certresolver=letsencrypt"
+      - "traefik.http.services.payroll-ms.loadbalancer.server.port=8000"
 
+  # ── Leave Microservice ──────────────────────────────────────────────────────
   leave-ms:
     build:
       context: ./leave-ms
@@ -94,10 +111,14 @@ services:
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASS: ${RABBITMQ_PASS}
       CORS_ORIGINS: ${CORS_ORIGINS}
-      TALISMAN_FORCE_HTTPS: "true"
-    ports:
-      - "5000"
+      TALISMAN_FORCE_HTTPS: "false"
     restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.leave-ms.rule=Host(`hrms-api.whilmarbitoco.qzz.io`) && PathPrefix(`/leave`)"
+      - "traefik.http.routers.leave-ms.entrypoints=websecure"
+      - "traefik.http.routers.leave-ms.tls.certresolver=letsencrypt"
+      - "traefik.http.services.leave-ms.loadbalancer.server.port=8000"
 
 volumes:
   rabbitmq_data:
