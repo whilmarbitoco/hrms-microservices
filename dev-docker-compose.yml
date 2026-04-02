@@ -1,0 +1,220 @@
+services:
+
+  # ── Databases ──────────────────────────────────────────────────────────────
+
+  auth-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: auth_db
+      POSTGRES_USER: hrms
+      POSTGRES_PASSWORD: hrms_secret
+    volumes:
+      - auth_db_data:/var/lib/postgresql/data
+    ports:
+      - "5436:5432"
+    networks:
+      - hrms_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hrms -d auth_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  employee-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: employee_db
+      POSTGRES_USER: hrms
+      POSTGRES_PASSWORD: hrms_secret
+    volumes:
+      - employee_db_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - hrms_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hrms -d employee_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  payroll-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: payroll_db
+      POSTGRES_USER: hrms
+      POSTGRES_PASSWORD: hrms_secret
+    volumes:
+      - payroll_db_data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    networks:
+      - hrms_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hrms -d payroll_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  leave-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: leave_db
+      POSTGRES_USER: hrms
+      POSTGRES_PASSWORD: hrms_secret
+    volumes:
+      - leave_db_data:/var/lib/postgresql/data
+    ports:
+      - "5435:5432"
+    networks:
+      - hrms_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hrms -d leave_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── RabbitMQ ───────────────────────────────────────────────────────────────
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: hrms
+      RABBITMQ_DEFAULT_PASS: hrms_secret
+    ports:
+      - "15672:15672"   # management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - hrms_network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  # ── Services ───────────────────────────────────────────────────────────────
+
+  auth-ms:
+    build:
+      context: ./auth-ms
+    environment:
+      FLASK_ENV: production
+      SECRET_KEY: ${SECRET_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      DATABASE_URL: postgresql://hrms:hrms_secret@auth-db:5432/auth_db
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: hrms
+      RABBITMQ_PASS: hrms_secret
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      TALISMAN_FORCE_HTTPS: "false"
+    depends_on:
+      auth-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - hrms_network
+    restart: unless-stopped
+
+  employee-ms:
+    build:
+      context: ./employee-ms
+    environment:
+      FLASK_ENV: production
+      SECRET_KEY: ${SECRET_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      DATABASE_URL: postgresql://hrms:hrms_secret@employee-db:5432/employee_db
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: hrms
+      RABBITMQ_PASS: hrms_secret
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      TALISMAN_FORCE_HTTPS: "false"
+    depends_on:
+      employee-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - hrms_network
+    restart: unless-stopped
+
+  payroll-ms:
+    build:
+      context: ./payroll-ms
+    environment:
+      FLASK_ENV: production
+      SECRET_KEY: ${SECRET_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      DATABASE_URL: postgresql://hrms:hrms_secret@payroll-db:5432/payroll_db
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: hrms
+      RABBITMQ_PASS: hrms_secret
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      TALISMAN_FORCE_HTTPS: "false"
+    depends_on:
+      payroll-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - hrms_network
+    restart: unless-stopped
+
+  leave-ms:
+    build:
+      context: ./leave-ms
+    environment:
+      FLASK_ENV: production
+      SECRET_KEY: ${SECRET_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      DATABASE_URL: postgresql://hrms:hrms_secret@leave-db:5432/leave_db
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: hrms
+      RABBITMQ_PASS: hrms_secret
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      TALISMAN_FORCE_HTTPS: "false"
+    depends_on:
+      leave-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - hrms_network
+    restart: unless-stopped
+
+  # ── NGINX ──────────────────────────────────────────────────────────────────
+
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - employee-ms
+      - payroll-ms
+      - leave-ms
+      - auth-ms
+    networks:
+      - hrms_network
+    restart: unless-stopped
+
+# ── Volumes ────────────────────────────────────────────────────────────────
+
+volumes:
+  auth_db_data:
+  employee_db_data:
+  payroll_db_data:
+  leave_db_data:
+  rabbitmq_data:
+
+# ── Networks ───────────────────────────────────────────────────────────────
+
+networks:
+  hrms_network:
+    driver: bridge
