@@ -4,6 +4,8 @@ services:
   # ── RabbitMQ ───────────────────────────────────────────────────────────────
   rabbitmq:
     image: rabbitmq:3.13-management-alpine
+    networks:
+      - dokploy-network
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
@@ -20,6 +22,8 @@ services:
   auth-ms:
     build:
       context: ./auth-ms
+    networks:
+      - dokploy-network
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -46,6 +50,8 @@ services:
   employee-ms:
     build:
       context: ./employee-ms
+    networks:
+      - dokploy-network
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -72,6 +78,8 @@ services:
   payroll-ms:
     build:
       context: ./payroll-ms
+    networks:
+      - dokploy-network
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -98,6 +106,8 @@ services:
   leave-ms:
     build:
       context: ./leave-ms
+    networks:
+      - dokploy-network
     depends_on:
       rabbitmq:
         condition: service_healthy
