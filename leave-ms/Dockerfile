@@ -13,7 +13,3 @@ ENV FLASK_ENV=production
 
 EXPOSE 8000
 
-COPY install.sh .
-RUN chmod +x install.sh
-
-CMD ["./install.sh"]
