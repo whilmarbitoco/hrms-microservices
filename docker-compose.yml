@@ -1,3 +1,5 @@
+version: "3"
+
 services:
   # ── RabbitMQ ───────────────────────────────────────────────────────────────
   rabbitmq:
@@ -15,8 +17,6 @@ services:
       interval: 15s
       timeout: 10s
       retries: 5
-    labels:
-      - "traefik.enable=false" # Prevents Traefik from trying to route HTTP to RabbitMQ
 
   # ── Auth Microservice ───────────────────────────────────────────────────────
   auth-ms:
@@ -41,12 +41,10 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=dokploy-network"
-      - "traefik.http.routers.auth-router.rule=Host(`hrms-api.whilmarbitoco.qzz.io`) && PathPrefix(`/auth`)"
-      - "traefik.http.routers.auth-router.entrypoints=websecure"
-      - "traefik.http.routers.auth-router.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.auth-router.service=auth-svc"
-      - "traefik.http.services.auth-svc.loadbalancer.server.port=8000"
+      - "traefik.http.routers.auth-ms.rule=Host(`hrms-api.whilmarbitoco.qzz.io`) && PathPrefix(`/auth`)"
+      - "traefik.http.routers.auth-ms.entrypoints=websecure"
+      - "traefik.http.routers.auth-ms.tls.certresolver=letsencrypt"
+      - "traefik.http.services.auth-ms.loadbalancer.server.port=8000"
 
   # ── Employee Microservice ───────────────────────────────────────────────────
   employee-ms:
@@ -71,12 +69,10 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=dokploy-network"
-      - "traefik.http.routers.employee-router.rule=Host(`hrms-api.whilmarbitoco.qzz.io`) && (PathPrefix(`/employees`) || PathPrefix(`/departments`) || PathPrefix(`/employee-roles`))"
-      - "traefik.http.routers.employee-router.entrypoints=websecure"
-      - "traefik.http.routers.employee-router.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.employee-router.service=employee-svc"
-      - "traefik.http.services.employee-svc.loadbalancer.server.port=8000"
+      - "traefik.http.routers.employee-ms.rule=Host(`hrms-api.whilmarbitoco.qzz.io`) && (PathPrefix(`/employees`) || PathPrefix(`/departments`) || PathPrefix(`/employee-roles`))"
+      - "traefik.http.routers.employee-ms.entrypoints=websecure"
+      - "traefik.http.routers.employee-ms.tls.certresolver=letsencrypt"
+      - "traefik.http.services.employee-ms.loadbalancer.server.port=8000"
 
   # ── Payroll Microservice ────────────────────────────────────────────────────
   payroll-ms:
@@ -101,12 +97,10 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=dokploy-network"
-      - "traefik.http.routers.payroll-router.rule=Host(`hrms-api.whilmarbitoco.qzz.io`) && PathPrefix(`/payroll`)"
-      - "traefik.http.routers.payroll-router.entrypoints=websecure"
-      - "traefik.http.routers.payroll-router.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.payroll-router.service=payroll-svc"
-      - "traefik.http.services.payroll-svc.loadbalancer.server.port=8000"
+      - "traefik.http.routers.payroll-ms.rule=Host(`hrms-api.whilmarbitoco.qzz.io`) && PathPrefix(`/payroll`)"
+      - "traefik.http.routers.payroll-ms.entrypoints=websecure"
+      - "traefik.http.routers.payroll-ms.tls.certresolver=letsencrypt"
+      - "traefik.http.services.payroll-ms.loadbalancer.server.port=8000"
 
   # ── Leave Microservice ──────────────────────────────────────────────────────
   leave-ms:
@@ -131,16 +125,10 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=dokploy-network"
-      - "traefik.http.routers.leave-router.rule=Host(`hrms-api.whilmarbitoco.qzz.io`) && PathPrefix(`/leave`)"
-      - "traefik.http.routers.leave-router.entrypoints=websecure"
-      - "traefik.http.routers.leave-router.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.leave-router.service=leave-svc"
-      - "traefik.http.services.leave-svc.loadbalancer.server.port=8000"
+      - "traefik.http.routers.leave-ms.rule=Host(`hrms-api.whilmarbitoco.qzz.io`) && PathPrefix(`/leave`)"
+      - "traefik.http.routers.leave-ms.entrypoints=websecure"
+      - "traefik.http.routers.leave-ms.tls.certresolver=letsencrypt"
+      - "traefik.http.services.leave-ms.loadbalancer.server.port=8000"
 
 volumes:
   rabbitmq_data:
-
-networks:
-  dokploy-network:
-    external: true
