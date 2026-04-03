@@ -41,6 +41,7 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=dokploy-network"
       - "traefik.http.routers.auth-ms.rule=Host(`hrms-api.whilmarbitoco.qzz.io`) && PathPrefix(`/auth`)"
       - "traefik.http.routers.auth-ms.entrypoints=websecure"
       - "traefik.http.routers.auth-ms.tls.certresolver=letsencrypt"
@@ -69,6 +70,7 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=dokploy-network"
       - "traefik.http.routers.employee-ms.rule=Host(`hrms-api.whilmarbitoco.qzz.io`) && (PathPrefix(`/employees`) || PathPrefix(`/departments`) || PathPrefix(`/employee-roles`))"
       - "traefik.http.routers.employee-ms.entrypoints=websecure"
       - "traefik.http.routers.employee-ms.tls.certresolver=letsencrypt"
@@ -97,6 +99,7 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=dokploy-network"
       - "traefik.http.routers.payroll-ms.rule=Host(`hrms-api.whilmarbitoco.qzz.io`) && PathPrefix(`/payroll`)"
       - "traefik.http.routers.payroll-ms.entrypoints=websecure"
       - "traefik.http.routers.payroll-ms.tls.certresolver=letsencrypt"
@@ -125,10 +128,15 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=dokploy-network"
       - "traefik.http.routers.leave-ms.rule=Host(`hrms-api.whilmarbitoco.qzz.io`) && PathPrefix(`/leave`)"
       - "traefik.http.routers.leave-ms.entrypoints=websecure"
       - "traefik.http.routers.leave-ms.tls.certresolver=letsencrypt"
       - "traefik.http.services.leave-ms.loadbalancer.server.port=8000"
+
+network:
+  name: dokploy-network
+  external: true
 
 volumes:
   rabbitmq_data:
