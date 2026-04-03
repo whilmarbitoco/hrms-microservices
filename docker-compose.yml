@@ -134,9 +134,5 @@ services:
       - "traefik.http.routers.leave-ms.tls.certresolver=letsencrypt"
       - "traefik.http.services.leave-ms.loadbalancer.server.port=8000"
 
-network:
-  name: dokploy-network
-  external: true
-
 volumes:
   rabbitmq_data:
