@@ -1,4 +1,4 @@
-version: "3"
+version: "3.8"
 
 services:
   # ── RabbitMQ ───────────────────────────────────────────────────────────────
@@ -11,12 +11,11 @@ services:
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
-      interval: 15s
-      timeout: 10s
-      retries: 5
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
 
   # ── Auth Microservice ───────────────────────────────────────────────────────
   auth-ms:
@@ -24,9 +23,6 @@ services:
       context: ./auth-ms
     networks:
       - dokploy-network
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
     environment:
       FLASK_ENV: production
       SECRET_KEY: ${SECRET_KEY}
@@ -38,7 +34,11 @@ services:
       RABBITMQ_PASS: ${RABBITMQ_PASS}
       CORS_ORIGINS: ${CORS_ORIGINS}
       TALISMAN_FORCE_HTTPS: "false"
-    restart: unless-stopped
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 5
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=dokploy-network"
@@ -53,9 +53,6 @@ services:
       context: ./employee-ms
     networks:
       - dokploy-network
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
     environment:
       FLASK_ENV: production
       SECRET_KEY: ${SECRET_KEY}
@@ -67,7 +64,11 @@ services:
       RABBITMQ_PASS: ${RABBITMQ_PASS}
       CORS_ORIGINS: ${CORS_ORIGINS}
       TALISMAN_FORCE_HTTPS: "false"
-    restart: unless-stopped
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 5
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=dokploy-network"
@@ -82,9 +83,6 @@ services:
       context: ./payroll-ms
     networks:
       - dokploy-network
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
     environment:
       FLASK_ENV: production
       SECRET_KEY: ${SECRET_KEY}
@@ -96,7 +94,11 @@ services:
       RABBITMQ_PASS: ${RABBITMQ_PASS}
       CORS_ORIGINS: ${CORS_ORIGINS}
       TALISMAN_FORCE_HTTPS: "false"
-    restart: unless-stopped
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 5
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=dokploy-network"
@@ -111,9 +113,6 @@ services:
       context: ./leave-ms
     networks:
       - dokploy-network
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
     environment:
       FLASK_ENV: production
       SECRET_KEY: ${SECRET_KEY}
@@ -125,7 +124,11 @@ services:
       RABBITMQ_PASS: ${RABBITMQ_PASS}
       CORS_ORIGINS: ${CORS_ORIGINS}
       TALISMAN_FORCE_HTTPS: "false"
-    restart: unless-stopped
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 5
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=dokploy-network"
@@ -136,3 +139,7 @@ services:
 
 volumes:
   rabbitmq_data:
+
+networks:
+  dokploy-network:
+    external: true
