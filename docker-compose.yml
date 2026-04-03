@@ -4,7 +4,6 @@ services:
   rabbitmq:
     image: rabbitmq:3.13-management-alpine
     networks:
-      - dokploy-network
       - hrms-internal
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
@@ -23,7 +22,6 @@ services:
     build:
       context: ./auth-ms
     networks:
-      - dokploy-network
       - hrms-internal
     depends_on:
       rabbitmq:
@@ -42,7 +40,7 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=dokploy-network"
+      - "traefik.docker.network=hrms-internal"
       - "traefik.http.routers.auth-ms.rule=Host(`hrms-api.whilmarbitoco.qzz.io`) && PathPrefix(`/auth`)"
       - "traefik.http.routers.auth-ms.entrypoints=websecure"
       - "traefik.http.routers.auth-ms.tls.certresolver=letsencrypt"
@@ -53,7 +51,6 @@ services:
     build:
       context: ./employee-ms
     networks:
-      - dokploy-network
       - hrms-internal
     depends_on:
       rabbitmq:
@@ -72,7 +69,7 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=dokploy-network"
+      - "traefik.docker.network=hrms-internal"
       - "traefik.http.routers.employee-ms.rule=Host(`hrms-api.whilmarbitoco.qzz.io`) && (PathPrefix(`/employees`) || PathPrefix(`/departments`) || PathPrefix(`/employee-roles`))"
       - "traefik.http.routers.employee-ms.entrypoints=websecure"
       - "traefik.http.routers.employee-ms.tls.certresolver=letsencrypt"
@@ -83,7 +80,6 @@ services:
     build:
       context: ./payroll-ms
     networks:
-      - dokploy-network
       - hrms-internal
     depends_on:
       rabbitmq:
@@ -102,7 +98,7 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=dokploy-network"
+      - "traefik.docker.network=hrms-internal"
       - "traefik.http.routers.payroll-ms.rule=Host(`hrms-api.whilmarbitoco.qzz.io`) && PathPrefix(`/payroll`)"
       - "traefik.http.routers.payroll-ms.entrypoints=websecure"
       - "traefik.http.routers.payroll-ms.tls.certresolver=letsencrypt"
@@ -113,7 +109,6 @@ services:
     build:
       context: ./leave-ms
     networks:
-      - dokploy-network
       - hrms-internal
     depends_on:
       rabbitmq:
@@ -132,7 +127,7 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=dokploy-network"
+      - "traefik.docker.network=hrms-internal"
       - "traefik.http.routers.leave-ms.rule=Host(`hrms-api.whilmarbitoco.qzz.io`) && PathPrefix(`/leave`)"
       - "traefik.http.routers.leave-ms.entrypoints=websecure"
       - "traefik.http.routers.leave-ms.tls.certresolver=letsencrypt"
@@ -142,7 +137,5 @@ volumes:
   rabbitmq_data:
 
 networks:
-  dokploy-network:
-    external: true
   hrms-internal:
     driver: bridge
