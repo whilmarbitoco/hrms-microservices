@@ -4,7 +4,7 @@
 
 **Project Status - April 06, 2026**
 
-You can read the API docs [here](ROUTES.md) or access the web app at `https://hrms.whilmarbitoco.qzz.io/`.
+You can read the API docs [here](ROUTES.md) or access the web app at [https://hrms.whilmarbitoco.qzz.io/](https://hrms.whilmarbitoco.qzz.io/).
 
 ---
 
