@@ -18,6 +18,9 @@ case "${FORCE_MIGRATE:-false}" in
     echo "[!] Running migrations..."
     flask db upgrade
 
+    echo "[!] Ensuring tables exist..."
+    python -c "from app import create_app; from app.extensions import db; app = create_app(); app.app_context().push(); db.create_all()"
+
     if [ -f /app/seed.sql ]; then
       echo "[!] Running seed.sql..."
       psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f /app/seed.sql
