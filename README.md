@@ -26,42 +26,13 @@ You can read the api docs [here](ROUTES.md) or access the web app: `https://hrms
 
 ## In Progress
 
-- **UI** — frontend not yet started
+None.
 
 ---
 
 ## Known Bugs
 
 None.
-
----
-
-## Startup Migrations And Seeds
-
-Each microservice includes its own `seed.sql`:
-
-- [auth-ms/seed.sql](/C:/Users/mwioc/opt/hrms-microservice/auth-ms/seed.sql)
-- [employee-ms/seed.sql](/C:/Users/mwioc/opt/hrms-microservice/employee-ms/seed.sql)
-- [leave-ms/seed.sql](/C:/Users/mwioc/opt/hrms-microservice/leave-ms/seed.sql)
-- [payroll-ms/seed.sql](/C:/Users/mwioc/opt/hrms-microservice/payroll-ms/seed.sql)
-
-When `FORCE_MIGRATE=true`, each service will:
-
-1. wait for its database
-2. drop and recreate the `public` schema
-3. run `flask db upgrade`
-4. run `/app/seed.sql`
-5. start Gunicorn
-
-This is destructive. It wipes the current database state for each microservice before migrating and seeding.
-
-Example:
-
-```env
-FORCE_MIGRATE=true
-```
-
-Set `FORCE_MIGRATE=false` for normal restarts.
 
 ---
 
