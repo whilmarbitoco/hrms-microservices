@@ -11,7 +11,7 @@ import {
   Menu, 
   X,
   UserCircle,
-  Settings
+  ChevronRight
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { cn } from '../lib/utils';
@@ -31,8 +31,8 @@ export default function MainLayout() {
       permission: null,
     },
     {
-      title: 'User Management',
-      icon: Settings,
+      title: 'Users',
+      icon: Users,
       path: '/users',
       permission: 'user.view',
     },
@@ -52,7 +52,7 @@ export default function MainLayout() {
       title: 'Employees',
       icon: Users,
       path: '/employees',
-      permission: 'employee.view',
+      permission: 'employee.create', 
     },
     {
       title: 'Payroll',
@@ -61,15 +61,9 @@ export default function MainLayout() {
       permission: 'payroll.view',
     },
     {
-      title: 'Leave Management',
+      title: 'Leave',
       icon: CalendarDays,
       path: '/leave',
-      permission: 'leave_request.view',
-    },
-    {
-      title: 'Leave Calendar',
-      icon: CalendarDays,
-      path: '/leave/calendar',
       permission: 'leave_request.view',
     },
   ];
@@ -81,99 +75,116 @@ export default function MainLayout() {
     navigate('/auth/login');
   };
 
+  const currentPathTitle = menuItems.find(item => location.pathname.startsWith(item.path))?.title || 'Dashboard';
+
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex h-screen bg-paper-base">
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 z-40 bg-slate-900/50 lg:hidden"
+          className="fixed inset-0 z-40 bg-ink-base/10 backdrop-blur-sm lg:hidden"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transition-transform lg:static lg:translate-x-0",
+        "fixed inset-y-0 left-0 z-50 w-72 bg-paper-raised border-r border-border-base transition-all duration-300 lg:static lg:translate-x-0 shadow-sm",
         !isSidebarOpen && "-translate-x-full"
       )}>
         <div className="flex flex-col h-full">
-          <div className="p-6">
-            <Link to="/dashboard" className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center">
-                <span className="text-white font-bold text-xl">H</span>
+          <div className="p-8">
+            <Link to="/dashboard" className="flex items-center gap-2 group">
+              <div className="h-10 w-10 bg-accent-base rounded-lg flex items-center justify-center transition-all">
+                <span className="text-white font-bold text-2xl tracking-tighter">H</span>
               </div>
-              <span className="text-xl font-bold text-slate-900">HRMS</span>
+              <span className="text-xl font-bold tracking-tight text-ink-base">HRMS.</span>
             </Link>
           </div>
 
-          <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
-            {filteredMenu.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                onClick={() => setIsSidebarOpen(false)}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                  location.pathname.startsWith(item.path)
-                    ? "bg-indigo-50 text-indigo-700"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                )}
-              >
-                <item.icon className="h-5 w-5" />
-                {item.title}
-              </Link>
-            ))}
+          <nav className="flex-1 px-4 space-y-1 overflow-y-auto pb-10">
+            <p className="px-4 py-3 text-[10px] font-semibold text-ink-faint uppercase tracking-wider">Management</p>
+            {filteredMenu.map((item) => {
+              const isActive = location.pathname.startsWith(item.path) || (item.path === '/dashboard' && location.pathname === '/');
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setIsSidebarOpen(false)}
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md transition-all group",
+                    isActive
+                      ? "bg-accent-muted text-accent-base"
+                      : "text-ink-muted hover:bg-paper-sunken hover:text-ink-base"
+                  )}
+                >
+                  <item.icon className={cn("h-4 w-4 transition-colors", isActive ? "text-accent-base" : "text-ink-faint group-hover:text-ink-base")} />
+                  {item.title}
+                </Link>
+              );
+            })}
           </nav>
 
-          <div className="p-4 border-t border-slate-200">
-            <Link to="/profile" className="flex items-center gap-3 px-3 py-2 mb-2 hover:bg-slate-100 rounded-md transition-colors">
-              <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center">
-                <UserCircle className="h-6 w-6 text-slate-500" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-slate-900 truncate">{user?.name}</p>
-                <p className="text-xs text-slate-500 truncate">{user?.email}</p>
-              </div>
-            </Link>
-            <Button 
-              variant="ghost" 
-              className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
-              onClick={handleLogout}
-            >
-              <LogOut className="mr-3 h-5 w-5" />
-              Logout
-            </Button>
+          <div className="p-4 mt-auto border-t border-border-faint">
+            <div className="bg-paper-sunken/50 p-4 rounded-lg border border-border-faint">
+              <Link to="/profile" className="flex items-center gap-3 mb-4 group">
+                <div className="h-10 w-10 rounded-full bg-paper-raised border border-border-base flex items-center justify-center shadow-sm group-hover:border-accent-base transition-colors">
+                  <UserCircle className="h-6 w-6 text-ink-faint group-hover:text-accent-base transition-colors" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-ink-base truncate">{user?.name}</p>
+                  <p className="text-[10px] text-ink-faint truncate font-medium">
+                    {user?.role?.replace('_', ' ')}
+                  </p>
+                </div>
+              </Link>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="w-full justify-start text-error-base hover:bg-error-base hover:text-white border-error-base/20 transition-all rounded-md"
+                onClick={handleLogout}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign Out
+              </Button>
+            </div>
           </div>
         </div>
       </aside>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-8">
-          <button 
-            className="p-2 -ml-2 text-slate-600 lg:hidden"
-            onClick={() => setIsSidebarOpen(true)}
-          >
-            <Menu className="h-6 w-6" />
-          </button>
-          
-          <div className="flex-1 px-4">
-            <h2 className="text-lg font-semibold text-slate-900">
-              {menuItems.find(item => location.pathname.startsWith(item.path))?.title || 'Dashboard'}
-            </h2>
+        <header className="h-20 bg-paper-raised border-b border-border-base flex items-center justify-between px-8 lg:px-12 sticky top-0 z-30 shadow-sm">
+          <div className="flex items-center gap-6">
+            <button 
+              className="p-2 -ml-2 text-ink-muted hover:bg-paper-sunken lg:hidden transition-colors rounded-md"
+              onClick={() => setIsSidebarOpen(true)}
+            >
+              <Menu className="h-6 w-6" />
+            </button>
+            
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2 text-[10px] font-medium text-ink-faint mb-0.5">
+                <span>Application</span>
+                <ChevronRight className="h-2.5 w-2.5" />
+                <span>{currentPathTitle}</span>
+              </div>
+              <h2 className="text-xl font-bold tracking-tight text-ink-base">
+                {currentPathTitle}
+              </h2>
+            </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            {/* Header actions like notifications could go here */}
-          </div>
+          <div />
         </header>
 
-        <main className="flex-1 overflow-y-auto p-4 lg:p-8">
+        <main className="flex-1 overflow-y-auto p-8 lg:p-12 scroll-smooth">
           <div className="max-w-7xl mx-auto">
             <Outlet />
           </div>
         </main>
       </div>
     </div>
+
   );
 }

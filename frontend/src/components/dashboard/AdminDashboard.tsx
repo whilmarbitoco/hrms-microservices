@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
-import { Activity, ArrowRight, Building2, CalendarDays, ShieldCheck, Users } from 'lucide-react';
+import { ArrowUpRight, Building2, CalendarDays, ShieldCheck, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { ROLE_LABELS_BY_NAME } from '../../constants';
 import { useDepartments } from '../../hooks/useDepartments';
 import { useEmployees } from '../../hooks/useEmployees';
 import { useLeaveRequests } from '../../hooks/useLeave';
@@ -8,7 +9,6 @@ import { useUsers } from '../../hooks/useUsers';
 import { Button } from '../ui/Button';
 import { ErrorState } from '../ui/ErrorState';
 import { Loader } from '../ui/Loader';
-import { ROLE_LABELS_BY_NAME } from '../../constants';
 
 export default function AdminDashboard({ user }: { user: any }) {
   const navigate = useNavigate();
@@ -24,7 +24,8 @@ export default function AdminDashboard({ user }: { user: any }) {
   if (usersQuery.isError || departmentsQuery.isError || employeesQuery.isError || leavesQuery.isError) {
     return (
       <ErrorState
-        message="Failed to load the administrator overview."
+        title="Unable to load executive overview"
+        message="Some organization data could not be synchronized. Retry the request to refresh the dashboard."
         onRetry={() => {
           void usersQuery.refetch();
           void departmentsQuery.refetch();
@@ -47,110 +48,157 @@ export default function AdminDashboard({ user }: { user: any }) {
   }, {});
 
   const stats = [
-    { label: 'Active Users', value: activeUsers.length.toString(), icon: Users, color: 'bg-slate-900' },
-    { label: 'Employees', value: employees.length.toString(), icon: Activity, color: 'bg-sky-600' },
-    { label: 'Departments', value: departments.length.toString(), icon: Building2, color: 'bg-emerald-600' },
-    { label: 'Pending Leaves', value: pendingLeaves.length.toString(), icon: CalendarDays, color: 'bg-amber-500' },
+    {
+      label: 'Active accounts',
+      value: activeUsers.length.toString(),
+      meta: 'Users with current access',
+      icon: Users,
+    },
+    {
+      label: 'Employees',
+      value: employees.length.toString(),
+      meta: 'People records across the company',
+      icon: ShieldCheck,
+    },
+    {
+      label: 'Departments',
+      value: departments.length.toString(),
+      meta: 'Configured business units',
+      icon: Building2,
+    },
+    {
+      label: 'Pending leave approvals',
+      value: pendingLeaves.length.toString(),
+      meta: 'Requests waiting for action',
+      icon: CalendarDays,
+    },
   ];
 
-  return (
-    <div className="space-y-8">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Administrator Console</p>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">System access, workforce coverage, and role distribution</h1>
-          <p className="max-w-2xl text-sm text-slate-600">
-            Monitor account activity and structural data across the HRMS services.
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <Button variant="outline" onClick={() => navigate('/departments')}>
-            <Building2 className="mr-2 h-4 w-4" />
-            Departments
-          </Button>
-          <Button onClick={() => navigate('/users')}>
-            <ShieldCheck className="mr-2 h-4 w-4" />
-            Manage Users
-          </Button>
-        </div>
-      </div>
+  const recentAccounts = [...users]
+    .sort((a, b) => new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime())
+    .slice(0, 5);
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+  return (
+    <div className="page-shell">
+      <section className="hero-banner">
+        <div className="hero-content">
+          <div>
+            <p className="hero-kicker">Organization overview</p>
+            <h1 className="hero-title">Administrative command center</h1>
+            <p className="hero-text">
+              Monitor platform adoption, workforce structure, and access governance from one
+              concise executive view.
+            </p>
+            <div className="hero-meta">
+              <span className="hero-meta-chip">Signed in as {user?.name}</span>
+              <span className="hero-meta-chip">Role: Administrator</span>
+            </div>
+          </div>
+          <Button onClick={() => navigate('/users')}>
+            Open user directory
+            <ArrowUpRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </section>
+
+      <section className="metric-grid">
         {stats.map((stat, index) => (
           <motion.div
             key={stat.label}
-            initial={{ opacity: 0, y: 18 }}
+            initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.08 }}
-            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+            className="metric-card"
           >
-            <div className="flex items-start justify-between">
+            <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{stat.label}</p>
-                <p className="mt-3 text-2xl font-bold text-slate-900">{stat.value}</p>
+                <p className="metric-label">{stat.label}</p>
+                <p className="metric-value">{stat.value}</p>
+                <p className="metric-meta">{stat.meta}</p>
               </div>
-              <div className={`${stat.color} rounded-2xl p-3 text-white`}>
-                <stat.icon className="h-5 w-5" />
+              <div className="rounded-2xl border border-border-base bg-paper-sunken p-3">
+                <stat.icon className="h-5 w-5 text-accent-base" />
               </div>
             </div>
           </motion.div>
         ))}
-      </div>
+      </section>
 
-      <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-        <section className="rounded-3xl border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-6 shadow-sm">
-          <div className="flex items-center justify-between">
+      <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
+        <section className="section-card">
+          <div className="section-header">
             <div>
-              <h2 className="text-lg font-semibold text-slate-900">Role coverage</h2>
-              <p className="text-sm text-slate-500">How user access is currently distributed.</p>
+              <h2 className="section-title">Access distribution</h2>
+              <p className="section-description">Current user mix by assigned platform role.</p>
             </div>
-            <ShieldCheck className="h-5 w-5 text-slate-400" />
+            <Button variant="outline" size="sm" onClick={() => navigate('/users')}>
+              Manage users
+            </Button>
           </div>
-          <div className="mt-6 space-y-3">
+
+          <div className="space-y-3">
             {Object.entries(roleBreakdown).map(([role, count]) => (
-              <div key={role} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3">
-                <p className="font-medium text-slate-900">{ROLE_LABELS_BY_NAME[role] ?? role}</p>
-                <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">{count}</span>
+              <div
+                key={role}
+                className="flex items-center justify-between rounded-xl border border-border-base bg-paper-sunken/30 px-4 py-4"
+              >
+                <div>
+                  <p className="text-sm font-semibold text-ink-base">
+                    {ROLE_LABELS_BY_NAME[role] ?? role.replace('_', ' ')}
+                  </p>
+                  <p className="mt-1 text-xs uppercase tracking-[0.16em] text-ink-muted">
+                    Active role bucket
+                  </p>
+                </div>
+                <div className="text-2xl font-bold tracking-tight text-ink-base">{count}</div>
               </div>
             ))}
           </div>
         </section>
 
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center justify-between">
+        <section className="section-card">
+          <div className="section-header">
             <div>
-              <h2 className="text-lg font-semibold text-slate-900">Latest accounts</h2>
-              <p className="text-sm text-slate-500">Recently created users and current status.</p>
+              <h2 className="section-title">Recently added accounts</h2>
+              <p className="section-description">Newest users created in the platform.</p>
             </div>
-            <Button variant="ghost" onClick={() => navigate('/users')}>
-              Open users
-              <ArrowRight className="ml-2 h-4 w-4" />
+            <Button variant="ghost" size="sm" onClick={() => navigate('/users')}>
+              View all
             </Button>
           </div>
-          <div className="mt-6 space-y-3">
-            {[...users]
-              .sort((a, b) => new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime())
-              .slice(0, 5)
-              .map((account) => (
-                <div key={account.id} className="rounded-2xl border border-slate-200 p-4">
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
-                      <p className="font-medium text-slate-900">{account.name}</p>
-                      <p className="text-sm text-slate-500">{account.email}</p>
-                    </div>
+
+          <div className="data-list">
+            {recentAccounts.map((account) => (
+              <div key={account.id} className="data-list-row">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-3">
+                    <p className="truncate text-sm font-semibold text-ink-base">{account.name}</p>
                     <span
-                      className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
-                        account.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
-                      }`}
+                      className={
+                        account.is_active
+                          ? 'status-badge status-badge-success'
+                          : 'status-badge status-badge-danger'
+                      }
                     >
                       {account.is_active ? 'Active' : 'Inactive'}
                     </span>
                   </div>
-                  <p className="mt-3 text-xs uppercase tracking-[0.18em] text-slate-500">
-                    {account.role ? ROLE_LABELS_BY_NAME[account.role] ?? account.role : 'Role not assigned'}
+                  <p className="mt-1 truncate text-sm text-ink-muted">{account.email}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-medium text-ink-base">
+                    {account.role ? ROLE_LABELS_BY_NAME[account.role] ?? account.role : 'Unassigned'}
+                  </p>
+                  <p className="mt-1 text-xs uppercase tracking-[0.16em] text-ink-muted">
+                    {new Date(account.created_at ?? '').toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
                   </p>
                 </div>
-              ))}
+              </div>
+            ))}
           </div>
         </section>
       </div>

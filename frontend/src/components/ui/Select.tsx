@@ -1,5 +1,6 @@
 import { SelectHTMLAttributes, forwardRef } from 'react';
 import { cn } from '../../lib/utils';
+import { ChevronDown } from 'lucide-react';
 
 interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
@@ -8,31 +9,40 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 }
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
-  ({ className, label, error, options, ...props }, ref) => {
+  ({ className, label, error, options, disabled, ...props }, ref) => {
     return (
-      <div className="w-full space-y-1.5">
+      <div className="w-full space-y-1.5 text-left group/field">
         {label && (
-          <label className="text-sm font-medium text-slate-700">
+          <label className="block text-xs font-semibold uppercase tracking-[0.18em] text-ink-muted">
             {label}
           </label>
         )}
-        <select
-          className={cn(
-            'flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm ring-offset-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
-            error && 'border-red-500 focus:ring-red-500',
-            className
-          )}
-          ref={ref}
-          {...props}
-        >
-          <option value="">Select an option</option>
-          {options.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-        {error && <p className="text-xs text-red-500">{error}</p>}
+        <div className="relative">
+          <select
+            ref={ref}
+            disabled={disabled}
+            className={cn(
+              'block h-11 w-full appearance-none rounded-lg border border-border-base bg-paper-raised px-4 py-2.5 pr-10 text-sm text-ink-base shadow-sm transition-all focus:border-accent-base focus:ring-4 focus:ring-accent-base/5 focus:outline-none disabled:cursor-not-allowed disabled:bg-paper-sunken disabled:opacity-50',
+              error && 'border-error-base focus:border-error-base focus:ring-error-base/5',
+              className
+            )}
+            {...props}
+          >
+            {options.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-faint pointer-events-none transition-colors group-focus-within/field:text-accent-base">
+            <ChevronDown className="h-4 w-4" />
+          </div>
+        </div>
+        {error && (
+          <p className="text-xs font-medium text-error-base animate-in fade-in slide-in-from-top-1">
+            {error}
+          </p>
+        )}
       </div>
     );
   }

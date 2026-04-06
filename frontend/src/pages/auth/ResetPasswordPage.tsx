@@ -1,21 +1,24 @@
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useState } from 'react';
-import { api } from '../../lib/api';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { ArrowRight, KeyRound, Lock } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { z } from 'zod';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { toast } from '../../components/ui/Toaster';
+import { api } from '../../lib/api';
 
-const resetPasswordSchema = z.object({
-  token: z.string().min(1, 'Token is required'),
-  new_password: z.string().min(6, 'Password must be at least 6 characters'),
-  confirm_password: z.string().min(6, 'Please confirm your password'),
-}).refine((data) => data.new_password === data.confirm_password, {
-  message: "Passwords don't match",
-  path: ["confirm_password"],
-});
+const resetPasswordSchema = z
+  .object({
+    token: z.string().min(1, 'Reset token is required'),
+    new_password: z.string().min(6, 'Password must be at least 6 characters'),
+    confirm_password: z.string().min(6, 'Please confirm your password'),
+  })
+  .refine((data) => data.new_password === data.confirm_password, {
+    message: "Passwords don't match",
+    path: ['confirm_password'],
+  });
 
 type ResetPasswordForm = z.infer<typeof resetPasswordSchema>;
 
@@ -42,7 +45,7 @@ export default function ResetPasswordPage() {
         token: data.token,
         new_password: data.new_password,
       });
-      toast.success('Password reset successfully! Please login.');
+      toast.success('Password reset successfully. Please sign in.');
       navigate('/auth/login');
     } catch (error: any) {
       toast.error(error);
@@ -53,31 +56,44 @@ export default function ResetPasswordPage() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <Input
-        label="Reset Token"
-        placeholder="Enter the token from your email"
-        {...register('token')}
-        error={errors.token?.message}
-      />
+      <div className="space-y-2">
+        <h2 className="text-2xl font-bold tracking-tight text-ink-base">Reset password</h2>
+        <p className="text-sm leading-7 text-ink-muted">
+          Enter your reset token and create a new password for your HRMS account.
+        </p>
+      </div>
 
-      <Input
-        label="New Password"
-        type="password"
-        placeholder="••••••••"
-        {...register('new_password')}
-        error={errors.new_password?.message}
-      />
+      <div className="space-y-5">
+        <Input
+          label="Reset token"
+          placeholder="Enter the token from your email"
+          icon={<KeyRound className="h-4 w-4" />}
+          {...register('token')}
+          error={errors.token?.message}
+        />
 
-      <Input
-        label="Confirm New Password"
-        type="password"
-        placeholder="••••••••"
-        {...register('confirm_password')}
-        error={errors.confirm_password?.message}
-      />
+        <Input
+          label="New password"
+          type="password"
+          placeholder="........"
+          icon={<Lock className="h-4 w-4" />}
+          {...register('new_password')}
+          error={errors.new_password?.message}
+        />
+
+        <Input
+          label="Confirm new password"
+          type="password"
+          placeholder="........"
+          icon={<Lock className="h-4 w-4" />}
+          {...register('confirm_password')}
+          error={errors.confirm_password?.message}
+        />
+      </div>
 
       <Button type="submit" className="w-full" isLoading={isLoading}>
-        Reset Password
+        Reset password
+        <ArrowRight className="h-4 w-4" />
       </Button>
     </form>
   );

@@ -1,16 +1,17 @@
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useNavigate, Link } from 'react-router-dom';
 import { useState } from 'react';
-import { api } from '../../lib/api';
-import { useAuth } from '../../context/AuthContext';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Mail, Lock } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { Link, useNavigate } from 'react-router-dom';
+import { z } from 'zod';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { toast } from '../../components/ui/Toaster';
+import { useAuth } from '../../context/AuthContext';
+import { api } from '../../lib/api';
 
 const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
+  email: z.string().email('Enter a valid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
@@ -34,23 +35,23 @@ export default function LoginPage() {
     try {
       const response = await api.post('/auth/login', data);
       login(response.data.access_token, response.data.user);
-      toast.success('Logged in successfully');
+      toast.success('Signed in successfully');
       navigate('/dashboard');
     } catch (error: any) {
-      const errorMessage = error.message || (typeof error === 'string' ? error : 'An unexpected error occurred');
+      const errorMessage = error.message || (typeof error === 'string' ? error : 'Unable to sign in');
       toast.error(errorMessage);
-      console.error('Login error:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       <Input
         label="Email address"
         type="email"
-        placeholder="user@hrms.com"
+        placeholder="name@company.com"
+        icon={<Mail className="h-4 w-4" />}
         {...register('email')}
         error={errors.email?.message}
       />
@@ -58,27 +59,26 @@ export default function LoginPage() {
       <Input
         label="Password"
         type="password"
-        placeholder="••••••••"
+        placeholder="........"
+        icon={<Lock className="h-4 w-4" />}
         {...register('password')}
         error={errors.password?.message}
       />
 
-      <div className="flex items-center justify-between">
-        <div className="text-sm">
-          <Link to="/auth/forgot-password" title="Forgot password" className="font-medium text-indigo-600 hover:text-indigo-500">
-            Forgot your password?
-          </Link>
-        </div>
+      <div className="flex justify-end">
+        <Link to="/auth/forgot-password" className="text-sm font-medium text-accent-base hover:underline">
+          Forgot password?
+        </Link>
       </div>
 
       <Button type="submit" className="w-full" isLoading={isLoading}>
         Sign in
       </Button>
 
-      <p className="text-center text-sm text-slate-600">
-        Don't have an account?{' '}
-        <Link to="/auth/register" className="font-medium text-indigo-600 hover:text-indigo-500">
-          Register here
+      <p className="text-center text-sm text-ink-muted">
+        Don&apos;t have an account?{' '}
+        <Link to="/auth/register" className="font-semibold text-accent-base hover:underline">
+          Create one
         </Link>
       </p>
     </form>

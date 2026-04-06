@@ -3,7 +3,7 @@ import { useLeaveCalendar } from '../../hooks/useLeave';
 import { Loader } from '../../components/ui/Loader';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { cn, formatDate } from '../../lib/utils';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, User } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, User, ChevronRight as ChevronRightIcon, ArrowUpRight, Activity, ShieldCheck } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 
 export default function LeaveCalendarPage() {
@@ -14,7 +14,7 @@ export default function LeaveCalendarPage() {
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
-  const monthName = currentDate.toLocaleString('default', { month: 'long' });
+  const monthName = currentDate.toLocaleString('default', { month: 'long' }).toUpperCase();
   const fromDate = `${year}-${String(month + 1).padStart(2, '0')}-01`;
   const toDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(daysInMonth(year, month)).padStart(2, '0')}`;
   const { data: events, isLoading, isError, error, refetch } = useLeaveCalendar(fromDate, toDate);
@@ -47,102 +47,150 @@ export default function LeaveCalendarPage() {
   };
 
   if (isLoading) return <Loader fullPage />;
-  if (isError) return <ErrorState message={(error as any).error || 'Failed to load calendar'} onRetry={refetch} />;
+  if (isError) return <ErrorState message={(error as any).error || 'CRITICAL_CALENDAR_SYNC_FAILURE'} onRetry={refetch} />;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Leave Calendar</h1>
-          <p className="text-slate-500">View all approved leave requests in a monthly calendar.</p>
-        </div>
-        <div className="flex items-center gap-2 bg-white rounded-lg border border-slate-200 p-1">
-          <Button variant="ghost" size="sm" onClick={prevMonth}>
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <span className="text-sm font-bold px-4 min-w-[140px] text-center">
-            {monthName} {year}
-          </span>
-          <Button variant="ghost" size="sm" onClick={nextMonth}>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-            <div key={day} className="py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">
-              {day}
-            </div>
-          ))}
-        </div>
-        <div className="grid grid-cols-7 auto-rows-[120px]">
-          {days.map((day, idx) => {
-            const dayEvents = day ? getEventsForDay(day) : [];
-            const isToday = day === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear();
-
-            return (
-              <div 
-                key={idx} 
-                className={cn(
-                  "border-r border-b border-slate-100 p-2 transition-colors",
-                  !day && "bg-slate-50/50",
-                  day && "hover:bg-slate-50/30"
-                )}
-              >
-                {day && (
-                  <div className="h-full flex flex-col">
-                    <span className={cn(
-                      "inline-flex items-center justify-center h-6 w-6 text-xs font-medium rounded-full mb-1",
-                      isToday ? "bg-indigo-600 text-white" : "text-slate-600"
-                    )}>
-                      {day}
-                    </span>
-                    <div className="flex-1 overflow-y-auto space-y-1 scrollbar-hide">
-                      {dayEvents.map((event, eIdx) => (
-                        <div 
-                          key={eIdx}
-                          className="px-1.5 py-0.5 rounded bg-indigo-50 border-l-2 border-indigo-500 text-[10px] text-indigo-700 truncate"
-                          title={`${event.employee_id} - ${event.policy?.name ?? `Policy #${event.policy_id}`}`}
-                        >
-                          <span className="font-bold">{event.employee_id}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-indigo-100 rounded-lg text-indigo-600">
-              <CalendarIcon className="h-5 w-5" />
-            </div>
-            <h3 className="font-bold text-slate-900">Upcoming Leaves</h3>
+    <div className="space-y-24">
+      <header className="flex items-center justify-between border-b border-border-strong pb-12">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3 label-mono">
+            <span>LEAVE_MODULE</span>
+            <ChevronRightIcon className="h-3 w-3 text-accent-base" />
+            <span>GLOBAL_TEMPORAL_VIEW</span>
           </div>
+          <h1 className="text-5xl font-black italic tracking-tighter text-ink-base uppercase">
+            LEAVE_CALENDAR
+          </h1>
+        </div>
+        <div className="flex items-center gap-1 border border-border-base bg-paper-raised p-2 shadow-sharp">
+          <Button variant="ghost" size="sm" onClick={prevMonth} className="h-10 w-10 p-0">
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+          <span className="label-mono text-xs font-black px-6 min-w-[200px] text-center italic">
+            {monthName} // {year}
+          </span>
+          <Button variant="ghost" size="sm" onClick={nextMonth} className="h-10 w-10 p-0">
+            <ChevronRight className="h-5 w-5" />
+          </Button>
+        </div>
+      </header>
+
+      <section className="space-y-12">
+        <div className="border border-border-base bg-paper-raised overflow-hidden">
+          <div className="grid grid-cols-7 border-b border-border-base bg-paper-sunken/50">
+            {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map(day => (
+              <div key={day} className="py-4 text-center label-mono text-[10px] opacity-50 border-r border-border-base last:border-r-0">
+                {day}
+              </div>
+            ))}
+          </div>
+          <div className="grid grid-cols-7 auto-rows-[140px]">
+            {days.map((day, idx) => {
+              const dayEvents = day ? getEventsForDay(day) : [];
+              const isToday = day === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear();
+
+              return (
+                <div 
+                  key={idx} 
+                  className={cn(
+                    "border-r border-b border-border-base p-4 transition-all duration-300 group",
+                    !day && "bg-paper-sunken/20",
+                    day && "hover:bg-paper-sunken/40"
+                  )}
+                >
+                  {day && (
+                    <div className="h-full flex flex-col">
+                      <span className={cn(
+                        "inline-flex items-center justify-center h-8 w-8 label-mono text-xs font-black border transition-all",
+                        isToday 
+                          ? "bg-ink-base text-paper-raised border-ink-base rotate-3" 
+                          : "text-ink-muted border-transparent group-hover:border-border-base"
+                      )}>
+                        {day.toString().padStart(2, '0')}
+                      </span>
+                      <div className="flex-1 overflow-y-auto mt-4 space-y-1 custom-scrollbar">
+                        {dayEvents.map((event, eIdx) => (
+                          <div 
+                            key={eIdx}
+                            className="px-2 py-1.5 border border-border-base bg-paper-raised label-mono text-[8px] font-black truncate hover:border-accent-base hover:text-accent-base cursor-default transition-colors flex items-center gap-2"
+                            title={`${event.employee_id} - ${event.policy?.name ?? `POLICY_${event.policy_id}`}`}
+                          >
+                            <span className="h-1 w-1 bg-accent-base shrink-0" />
+                            {event.employee_id}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-24">
+        <section className="lg:col-span-1 space-y-12">
+          <div className="flex items-center justify-between border-b border-border-strong pb-6">
+            <h2 className="text-2xl font-black tracking-tighter uppercase italic">UPCOMING_NODES</h2>
+            <Activity className="h-6 w-6 text-accent-base" />
+          </div>
+          
           <div className="space-y-4">
             {events?.filter(e => new Date(e.start_date) >= new Date() && e.status === 'approved').slice(0, 5).map(event => (
-              <div key={event.id} className="flex items-start gap-3">
-                <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+              <div key={event.id} className="p-6 border border-border-base bg-paper-raised group hover:border-ink-base transition-all flex items-center gap-6">
+                <div className="h-10 w-10 bg-paper-sunken border border-border-base flex items-center justify-center text-ink-faint group-hover:bg-ink-base group-hover:border-ink-base group-hover:text-paper-raised transition-all shrink-0">
                   <User className="h-4 w-4" />
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-slate-900">{event.employee_id}</p>
-                  <p className="text-xs text-slate-500">{formatDate(event.start_date)} - {formatDate(event.end_date)}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-black tracking-tighter uppercase italic truncate">{event.employee_id}</p>
+                  <p className="font-mono text-[9px] text-ink-faint truncate">
+                    {formatDate(event.start_date).toUpperCase()} — {formatDate(event.end_date).toUpperCase()}
+                  </p>
                 </div>
+                <ArrowUpRight className="h-4 w-4 text-ink-faint group-hover:text-accent-base transition-colors shrink-0" />
               </div>
             ))}
             {(!events || events.filter(e => new Date(e.start_date) >= new Date() && e.status === 'approved').length === 0) && (
-              <p className="text-sm text-slate-500 italic">No upcoming leaves scheduled.</p>
+              <div className="border border-dashed border-border-base p-16 text-center bg-paper-sunken/30">
+                <p className="label-mono opacity-30 italic">NO_UPCOMING_NODES_IDENTIFIED</p>
+              </div>
             )}
           </div>
-        </div>
+        </section>
+
+        <section className="lg:col-span-2 space-y-12">
+          <div className="flex items-center justify-between border-b border-border-strong pb-6">
+            <h2 className="text-2xl font-black tracking-tighter uppercase italic">CALENDAR_LEGEND</h2>
+            <ShieldCheck className="h-6 w-6 text-ink-faint" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="p-8 bg-paper-sunken/30 border border-border-base space-y-4">
+              <p className="label-mono text-accent-base">APPROVED_PROTOCOL</p>
+              <p className="text-sm text-ink-muted leading-relaxed">
+                Nodes displayed in the calendar grid represent verified and authorized leave requests. 
+                Data state is final for these temporal blocks.
+              </p>
+            </div>
+            <div className="p-8 border border-border-base space-y-6">
+              <p className="label-mono">VIEW_OPERATIONS</p>
+              <div className="space-y-3">
+                <div className="flex items-center gap-4">
+                  <div className="h-2 w-2 bg-accent-base" />
+                  <span className="label-mono text-[10px]">ACTIVE_LEAVE_BLOCK</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="h-2 w-2 bg-ink-base" />
+                  <span className="label-mono text-[10px]">CURRENT_TEMPORAL_MARKER</span>
+                </div>
+                <div className="flex items-center gap-4 opacity-30">
+                  <div className="h-2 w-2 bg-border-base" />
+                  <span className="label-mono text-[10px]">INACTIVE_TEMPORAL_SPACE</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   );

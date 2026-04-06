@@ -11,15 +11,26 @@ export default function DashboardPage() {
 
   if (!user?.role) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center space-y-4 text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
-          <span className="text-2xl">👤</span>
+      <div className="hero-banner">
+        <div className="hero-content min-h-[320px] items-center">
+          <div className="max-w-2xl">
+            <p className="hero-kicker">Account setup pending</p>
+            <h1 className="hero-title">Your workspace is not available yet.</h1>
+            <p className="hero-text">
+              Your account exists, but no usable role has been assigned. An administrator needs to
+              complete your HRMS access before dashboards and modules can be loaded.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-border-base bg-paper-raised/90 p-6 shadow-sm">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-ink-muted">
+              Current state
+            </div>
+            <div className="mt-3 text-2xl font-bold tracking-tight text-ink-base">Role not assigned</div>
+            <p className="mt-2 max-w-xs text-sm leading-7 text-ink-muted">
+              Contact your HR or system administrator to finish your account configuration.
+            </p>
+          </div>
         </div>
-        <h2 className="text-xl font-bold text-slate-900">Role not assigned</h2>
-        <p className="max-w-md text-slate-500">
-          Your account exists, but it does not have a usable role yet. Contact an administrator to
-          finish the setup.
-        </p>
       </div>
     );
   }

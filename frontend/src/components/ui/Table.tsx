@@ -9,21 +9,26 @@ interface TableProps {
 
 export function Table({ headers, children, className }: TableProps) {
   return (
-    <div className={cn("w-full overflow-x-auto rounded-lg border border-slate-200 bg-white", className)}>
-      <table className="w-full text-sm text-left">
-        <thead className="bg-slate-50 text-slate-500 font-medium border-b border-slate-200">
-          <tr>
-            {headers.map((header, i) => (
-              <th key={i} className="px-6 py-3 font-semibold uppercase tracking-wider text-xs">
-                {header}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-slate-100">
-          {children}
-        </tbody>
-      </table>
+    <div className={cn('w-full overflow-hidden rounded-xl border border-border-base bg-paper-raised shadow-sm', className)}>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm border-collapse">
+          <thead>
+            <tr className="border-b border-border-base bg-paper-sunken/50">
+              {headers.map((header, i) => (
+                <th
+                  key={i}
+                  className="px-6 py-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-muted"
+                >
+                  {header}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border-faint">
+            {children}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -38,12 +43,12 @@ interface TableRowProps {
 export function TableRow({ children, className, onClick }: TableRowProps) {
   return (
     <tr 
+      onClick={onClick}
       className={cn(
-        "hover:bg-slate-50 transition-colors", 
-        onClick && "cursor-pointer",
+        'group transition-colors hover:bg-paper-sunken/35', 
+        onClick && 'cursor-pointer',
         className
       )}
-      onClick={onClick}
     >
       {children}
     </tr>
@@ -58,7 +63,7 @@ interface TableCellProps {
 
 export function TableCell({ children, className, colSpan }: TableCellProps) {
   return (
-    <td colSpan={colSpan} className={cn("px-6 py-4 whitespace-nowrap text-slate-600", className)}>
+    <td colSpan={colSpan} className={cn('px-6 py-4 align-middle text-ink-base font-medium', className)}>
       {children}
     </td>
   );

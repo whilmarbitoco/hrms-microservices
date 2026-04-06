@@ -1,13 +1,13 @@
 import { motion } from 'motion/react';
-import { CalendarDays, Clock3, FileText, Wallet, ArrowRight, CircleAlert } from 'lucide-react';
+import { CalendarDays, CircleAlert, Clock3, ShieldCheck, Wallet } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLeaveBalances, useLeaveRequests } from '../../hooks/useLeave';
 import { useEmployeePayslips } from '../../hooks/usePayroll';
+import { formatCurrency, formatDate } from '../../lib/utils';
 import { Button } from '../ui/Button';
 import { EmptyState } from '../ui/EmptyState';
 import { ErrorState } from '../ui/ErrorState';
 import { Loader } from '../ui/Loader';
-import { formatCurrency, formatDate } from '../../lib/utils';
 
 export default function EmployeeDashboard({ user }: { user: any }) {
   const navigate = useNavigate();
@@ -24,11 +24,22 @@ export default function EmployeeDashboard({ user }: { user: any }) {
 
   if (!employeeId) {
     return (
-      <EmptyState
-        title="Employee profile not linked"
-        description="This account does not have an employee record yet, so self-service data cannot be loaded."
-        icon={CircleAlert}
-      />
+      <div className="hero-banner">
+        <div className="hero-content min-h-[280px] items-center">
+          <div className="max-w-2xl">
+            <p className="hero-kicker">Profile setup required</p>
+            <h1 className="hero-title">Your employee record is not linked yet.</h1>
+            <p className="hero-text">
+              Self-service leave and payroll data depend on a linked employee profile. Contact HR to
+              connect your account before using the portal.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-error-base/20 bg-error-base/5 p-6 shadow-sm">
+            <CircleAlert className="h-8 w-8 text-error-base" />
+            <p className="mt-3 text-lg font-semibold text-ink-base">Profile not linked</p>
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -39,7 +50,8 @@ export default function EmployeeDashboard({ user }: { user: any }) {
   if (balancesQuery.isError || requestsQuery.isError || payslipsQuery.isError) {
     return (
       <ErrorState
-        message="Failed to load your leave and payroll overview."
+        title="Unable to load personal workspace"
+        message="Your leave balances or payroll data could not be synchronized. Retry to refresh your dashboard."
         onRetry={() => {
           void balancesQuery.refetch();
           void requestsQuery.refetch();
@@ -63,188 +75,200 @@ export default function EmployeeDashboard({ user }: { user: any }) {
   const latestPayslip = payslips[0];
 
   const stats = [
-    { label: 'Leave Balance', value: `${totalBalance.toFixed(1)} days`, icon: CalendarDays, color: 'bg-sky-600' },
-    { label: 'Pending Requests', value: pendingRequests.toString(), icon: Clock3, color: 'bg-amber-500' },
-    { label: 'Approved Leaves', value: approvedRequests.toString(), icon: FileText, color: 'bg-emerald-600' },
+    { label: 'Available leave days', value: totalBalance.toFixed(1), meta: 'Combined leave balance', icon: CalendarDays },
+    { label: 'Pending requests', value: pendingRequests.toString(), meta: 'Awaiting manager review', icon: Clock3 },
+    { label: 'Approved requests', value: approvedRequests.toString(), meta: 'Approved leave entries', icon: ShieldCheck },
     {
-      label: 'Latest Net Pay',
-      value: latestPayslip ? formatCurrency(latestPayslip.net) : 'No payslip',
+      label: 'Latest net pay',
+      value: latestPayslip ? formatCurrency(latestPayslip.net) : 'No record',
+      meta: 'Most recent generated payslip',
       icon: Wallet,
-      color: 'bg-slate-900',
     },
   ];
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Employee Workspace</p>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Your leave and payroll at a glance</h1>
-          <p className="max-w-2xl text-sm text-slate-600">
-            Review balances, recent requests, and payslips without digging through separate pages.
-          </p>
+    <div className="page-shell">
+      <section className="hero-banner">
+        <div className="hero-content">
+          <div>
+            <p className="hero-kicker">Self service</p>
+            <h1 className="hero-title">Employee workspace</h1>
+            <p className="hero-text">
+              Review leave balances, track requests, and check payroll activity from a single
+              professional self-service dashboard.
+            </p>
+            <div className="hero-meta">
+              <span className="hero-meta-chip">Signed in as {user?.name}</span>
+              <span className="hero-meta-chip">Employee ID: {employeeId}</span>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Button variant="outline" onClick={() => navigate('/leave')}>
+              Request leave
+            </Button>
+            <Button onClick={() => navigate('/payroll')}>View payroll</Button>
+          </div>
         </div>
-        <div className="flex gap-3">
-          <Button variant="outline" onClick={() => navigate('/payroll')}>
-            <Wallet className="mr-2 h-4 w-4" />
-            My Payslips
-          </Button>
-          <Button onClick={() => navigate('/leave')}>
-            <CalendarDays className="mr-2 h-4 w-4" />
-            Request Leave
-          </Button>
-        </div>
-      </div>
+      </section>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section className="metric-grid">
         {stats.map((stat, index) => (
           <motion.div
             key={stat.label}
-            initial={{ opacity: 0, y: 18 }}
+            initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.08 }}
-            className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+            className="metric-card"
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{stat.label}</p>
-                <p className="mt-3 text-2xl font-bold text-slate-900">{stat.value}</p>
+                <p className="metric-label">{stat.label}</p>
+                <p className="metric-value">{stat.value}</p>
+                <p className="metric-meta">{stat.meta}</p>
               </div>
-              <div className={`${stat.color} rounded-2xl p-3 text-white`}>
-                <stat.icon className="h-5 w-5" />
+              <div className="rounded-2xl border border-border-base bg-paper-sunken p-3">
+                <stat.icon className="h-5 w-5 text-accent-base" />
               </div>
             </div>
           </motion.div>
         ))}
-      </div>
+      </section>
 
-      <div className="grid gap-6 xl:grid-cols-[1.2fr_1fr]">
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center justify-between">
+      <div className="grid gap-6 xl:grid-cols-[0.88fr_1.12fr]">
+        <section className="section-card">
+          <div className="section-header">
             <div>
-              <h2 className="text-lg font-semibold text-slate-900">Leave balances</h2>
-              <p className="text-sm text-slate-500">Current available days by policy.</p>
+              <h2 className="section-title">Leave balances</h2>
+              <p className="section-description">Available balances by policy.</p>
             </div>
-            <Button variant="ghost" onClick={() => navigate('/leave')}>
-              Open leave page
-              <ArrowRight className="ml-2 h-4 w-4" />
+            <Button variant="ghost" size="sm" onClick={() => navigate('/leave')}>
+              Manage leave
             </Button>
           </div>
-          <div className="mt-6 space-y-3">
-            {balances.length === 0 ? (
-              <EmptyState
-                title="No leave balances yet"
-                description="Balances will appear here once leave policies are assigned."
-                icon={CalendarDays}
-                className="border-none bg-slate-50 p-8"
-              />
-            ) : (
-              balances.map((balance) => (
+
+          {balances.length === 0 ? (
+            <EmptyState
+              title="No leave balances assigned"
+              description="Your leave policies will appear here once HR allocates them."
+              icon={CalendarDays}
+            />
+          ) : (
+            <div className="space-y-3">
+              {balances.map((balance) => (
                 <div
                   key={balance.id}
-                  className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
+                  className="flex items-center justify-between rounded-xl border border-border-base bg-paper-sunken/25 px-4 py-4"
                 >
                   <div>
-                    <p className="font-medium text-slate-900">{balance.policy?.name ?? `Policy #${balance.policy_id}`}</p>
-                    <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
-                      {balance.policy?.type ?? 'leave'} policy
+                    <p className="text-sm font-semibold text-ink-base">
+                      {balance.policy?.name ?? 'Leave policy'}
+                    </p>
+                    <p className="mt-1 text-sm text-ink-muted">
+                      {balance.policy?.type ?? 'Standard policy'}
                     </p>
                   </div>
-                  <p className="text-xl font-bold text-slate-900">{Number(balance.balance).toFixed(1)}</p>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold tracking-tight text-ink-base">
+                      {Number(balance.balance).toFixed(1)}
+                    </p>
+                    <p className="text-xs uppercase tracking-[0.16em] text-ink-muted">days</p>
+                  </div>
                 </div>
-              ))
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </section>
 
-        <section className="rounded-3xl border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-6 shadow-sm">
-          <div>
-            <h2 className="text-lg font-semibold text-slate-900">Latest payslips</h2>
-            <p className="text-sm text-slate-500">Your most recent payroll records.</p>
+        <section className="section-card">
+          <div className="section-header">
+            <div>
+              <h2 className="section-title">Recent payslips</h2>
+              <p className="section-description">Your latest payroll records and net pay totals.</p>
+            </div>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/payroll')}>
+              Full history
+            </Button>
           </div>
-          <div className="mt-6 space-y-3">
-            {payslips.length === 0 ? (
-              <EmptyState
-                title="No payslips generated"
-                description="Payslips will show up here after payroll is processed."
-                icon={Wallet}
-                className="border-none bg-white/70 p-8"
-              />
-            ) : (
-              payslips.slice(0, 3).map((payslip) => (
-                <div key={payslip.id} className="rounded-2xl border border-slate-200 bg-white p-4">
-                  <div className="flex items-start justify-between gap-4">
+
+          {payslips.length === 0 ? (
+            <EmptyState
+              title="No payslips generated yet"
+              description="Payroll records will appear here after your first processed cycle."
+              icon={Wallet}
+            />
+          ) : (
+            <div className="space-y-3">
+              {payslips.slice(0, 3).map((payslip) => (
+                <div key={payslip.id} className="rounded-xl border border-border-base bg-paper-sunken/25 px-4 py-4">
+                  <div className="flex items-center justify-between gap-4">
                     <div>
-                      <p className="font-medium text-slate-900">Batch #{payslip.batch_id}</p>
-                      <p className="text-sm text-slate-500">
-                        {payslip.generated_at ? formatDate(payslip.generated_at) : 'Generated recently'}
+                      <p className="text-sm font-semibold text-ink-base">Batch #{payslip.batch_id}</p>
+                      <p className="mt-1 text-sm text-ink-muted">
+                        Generated {payslip.generated_at ? formatDate(payslip.generated_at) : 'Pending'}
                       </p>
                     </div>
-                    <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold capitalize text-slate-700">
-                      {payslip.status}
-                    </span>
+                    <span className="status-badge status-badge-neutral">{payslip.status}</span>
                   </div>
-                  <div className="mt-4 grid grid-cols-3 gap-3 text-sm">
-                    <div>
-                      <p className="text-slate-500">Gross</p>
-                      <p className="font-semibold text-slate-900">{formatCurrency(payslip.gross)}</p>
-                    </div>
-                    <div>
-                      <p className="text-slate-500">Deductions</p>
-                      <p className="font-semibold text-rose-700">{formatCurrency(payslip.deductions)}</p>
-                    </div>
-                    <div>
-                      <p className="text-slate-500">Net</p>
-                      <p className="font-semibold text-emerald-700">{formatCurrency(payslip.net)}</p>
-                    </div>
+                  <div className="mt-4 border-t border-border-faint pt-4">
+                    <p className="text-xs uppercase tracking-[0.16em] text-ink-muted">Net pay</p>
+                    <p className="mt-1 text-2xl font-bold tracking-tight text-accent-base">
+                      {formatCurrency(payslip.net)}
+                    </p>
                   </div>
                 </div>
-              ))
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </section>
       </div>
 
-      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="flex items-center justify-between">
+      <section className="section-card">
+        <div className="section-header">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">Recent leave requests</h2>
-            <p className="text-sm text-slate-500">Your latest leave activity and approvals.</p>
+            <h2 className="section-title">Recent leave requests</h2>
+            <p className="section-description">Latest leave applications and their approval status.</p>
           </div>
-          <Button variant="ghost" onClick={() => navigate('/leave')}>
-            Manage requests
-            <ArrowRight className="ml-2 h-4 w-4" />
+          <Button variant="outline" size="sm" onClick={() => navigate('/leave')}>
+            Open leave center
           </Button>
         </div>
-        <div className="mt-6 space-y-3">
-          {requests.length === 0 ? (
-            <EmptyState
-              title="No requests yet"
-              description="Submit your first leave request to start tracking approvals."
-              icon={FileText}
-              className="border-none bg-slate-50 p-8"
-            />
-          ) : (
-            requests.slice(0, 4).map((request) => (
-              <div key={request.id} className="flex flex-col gap-3 rounded-2xl border border-slate-200 p-4 md:flex-row md:items-center md:justify-between">
-                <div>
-                  <p className="font-medium text-slate-900">{request.policy?.name ?? `Policy #${request.policy_id}`}</p>
-                  <p className="text-sm text-slate-500">
-                    {formatDate(request.start_date)} to {formatDate(request.end_date)} · {request.days} days
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold capitalize text-slate-700">
+
+        {requests.length === 0 ? (
+          <EmptyState
+            title="No leave requests yet"
+            description="Once you submit leave, your latest requests will be listed here."
+            icon={Clock3}
+          />
+        ) : (
+          <div className="grid gap-4 lg:grid-cols-3">
+            {requests.slice(0, 3).map((request) => (
+              <div key={request.id} className="rounded-xl border border-border-base bg-paper-sunken/20 p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-ink-base">
+                      {request.policy?.name ?? 'Leave request'}
+                    </p>
+                    <p className="mt-1 text-sm text-ink-muted">{request.days} day(s)</p>
+                  </div>
+                  <span
+                    className={
+                      request.status === 'approved'
+                        ? 'status-badge status-badge-success'
+                        : request.status === 'pending'
+                          ? 'status-badge status-badge-warning'
+                          : 'status-badge status-badge-neutral'
+                    }
+                  >
                     {request.status}
                   </span>
-                  {request.reviewed_by && (
-                    <p className="text-xs text-slate-500">Reviewed by {request.reviewed_by}</p>
-                  )}
                 </div>
+                <p className="mt-5 text-xs uppercase tracking-[0.16em] text-ink-muted">
+                  {formatDate(request.start_date)} to {formatDate(request.end_date)}
+                </p>
               </div>
-            ))
-          )}
-        </div>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

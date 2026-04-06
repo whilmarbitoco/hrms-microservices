@@ -11,17 +11,17 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', isLoading, children, disabled, ...props }, ref) => {
     const variants = {
-      primary: 'bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500',
-      secondary: 'bg-slate-100 text-slate-900 hover:bg-slate-200 focus:ring-slate-500',
-      outline: 'border border-slate-300 bg-transparent hover:bg-slate-50 focus:ring-indigo-500',
-      ghost: 'bg-transparent hover:bg-slate-100 text-slate-600 focus:ring-slate-500',
-      danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
+      primary: 'border border-accent-base bg-accent-base text-white hover:bg-accent-deep hover:border-accent-deep shadow-sm',
+      secondary: 'border border-border-base bg-paper-sunken text-ink-base hover:bg-border-faint',
+      outline: 'border border-border-base bg-paper-raised text-ink-base hover:bg-paper-sunken hover:border-border-strong',
+      ghost: 'border border-transparent bg-transparent text-ink-muted hover:bg-paper-sunken hover:text-ink-base',
+      danger: 'border border-error-base bg-error-base text-white hover:opacity-95 shadow-sm',
     };
 
     const sizes = {
-      sm: 'px-3 py-1.5 text-xs',
-      md: 'px-4 py-2 text-sm',
-      lg: 'px-6 py-3 text-base',
+      sm: 'h-9 px-3.5 text-xs font-semibold',
+      md: 'h-11 px-4.5 text-sm font-semibold',
+      lg: 'h-12 px-6 text-base font-semibold',
     };
 
     return (
@@ -29,15 +29,15 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || isLoading}
         className={cn(
-          'inline-flex items-center justify-center rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none',
+          'btn-base rounded-lg whitespace-nowrap transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-accent-base/10',
           variants[variant],
           sizes[size],
           className
         )}
         {...props}
       >
-        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        {children}
+        {isLoading && <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />}
+        <span className="flex items-center gap-2">{children}</span>
       </button>
     );
   }

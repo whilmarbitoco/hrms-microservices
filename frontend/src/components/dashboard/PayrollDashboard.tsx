@@ -1,107 +1,129 @@
 import { motion } from 'motion/react';
-import { Wallet, TrendingUp, FileText, PieChart, Clock, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { Button } from '../ui/Button';
+import { AlertCircle, CheckCircle2, Clock, FileText, PieChart, TrendingUp, Wallet } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Button } from '../ui/Button';
 
 export default function PayrollDashboard({ user }: { user: any }) {
   const navigate = useNavigate();
 
   const stats = [
-    { label: 'Total Payroll', value: '$45,200', icon: Wallet, color: 'bg-green-500' },
-    { label: 'Pending Batch', value: '1', icon: Clock, color: 'bg-amber-500' },
-    { label: 'Processed', value: '124', icon: CheckCircle2, color: 'bg-emerald-500' },
-    { label: 'Adjustments', value: '5', icon: TrendingUp, color: 'bg-indigo-500' },
+    { label: 'Current payroll total', value: '$45,200', meta: 'Latest monthly run', icon: Wallet },
+    { label: 'Pending batches', value: '1', meta: 'Runs awaiting completion', icon: Clock },
+    { label: 'Processed payslips', value: '124', meta: 'Completed this cycle', icon: CheckCircle2 },
+    { label: 'Adjustments', value: '5', meta: 'Open payroll adjustments', icon: TrendingUp },
   ];
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Payroll & Finance Dashboard</h1>
-          <p className="text-slate-500">Welcome, {user?.name}. Manage salary disbursements and financial reporting.</p>
+    <div className="page-shell">
+      <section className="hero-banner">
+        <div className="hero-content">
+          <div>
+            <p className="hero-kicker">Payroll operations</p>
+            <h1 className="hero-title">Compensation and disbursement overview</h1>
+            <p className="hero-text">
+              Review payroll cycle health, recent batches, and high-level pay composition from one
+              structured finance workspace.
+            </p>
+            <div className="hero-meta">
+              <span className="hero-meta-chip">Signed in as {user?.name}</span>
+              <span className="hero-meta-chip">Finance workspace</span>
+            </div>
+          </div>
+          <Button onClick={() => navigate('/payroll')}>Process payroll</Button>
         </div>
-        <div className="flex gap-3">
-          <Button onClick={() => navigate('/payroll')}>
-            <TrendingUp className="mr-2 h-4 w-4" />
-            Process Payroll
-          </Button>
-        </div>
-      </div>
+      </section>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <section className="metric-grid">
         {stats.map((stat, index) => (
           <motion.div
             key={stat.label}
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4"
+            transition={{ delay: index * 0.08 }}
+            className="metric-card"
           >
-            <div className={`${stat.color} p-3 rounded-lg`}>
-              <stat.icon className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-slate-500">{stat.label}</p>
-              <p className="text-2xl font-bold text-slate-900">{stat.value}</p>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="metric-label">{stat.label}</p>
+                <p className="metric-value">{stat.value}</p>
+                <p className="metric-meta">{stat.meta}</p>
+              </div>
+              <div className="rounded-2xl border border-border-base bg-paper-sunken p-3">
+                <stat.icon className="h-5 w-5 text-accent-base" />
+              </div>
             </div>
           </motion.div>
         ))}
-      </div>
+      </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-          <h3 className="text-lg font-semibold text-slate-900 mb-6">Recent Payroll Batches</h3>
-          <div className="space-y-4">
+      <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+        <section className="section-card">
+          <div className="section-header">
+            <div>
+              <h2 className="section-title">Recent payroll batches</h2>
+              <p className="section-description">Latest completed payroll runs and their totals.</p>
+            </div>
+          </div>
+
+          <div className="data-list">
             {[1, 2].map((i) => (
-              <div key={i} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-indigo-100 flex items-center justify-center">
-                    <FileText className="h-6 w-6 text-indigo-600" />
+              <div key={i} className="data-list-row">
+                <div className="flex items-center gap-4">
+                  <div className="rounded-2xl border border-border-base bg-paper-sunken p-3">
+                    <FileText className="h-5 w-5 text-accent-base" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-slate-900">Payroll Batch - March 2026</p>
-                    <p className="text-xs text-slate-500">Processed on Mar 31, 2026 • 124 Employees</p>
+                    <p className="text-sm font-semibold text-ink-base">Payroll Batch - March 2026</p>
+                    <p className="mt-1 text-sm text-ink-muted">
+                      Processed on Mar 31, 2026 . 124 employees
+                    </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-bold text-slate-900">$45,200.00</p>
-                  <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold rounded-full uppercase">Completed</span>
+                  <p className="text-sm font-semibold text-ink-base">$45,200.00</p>
+                  <span className="status-badge status-badge-success">Completed</span>
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </section>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-          <h3 className="text-lg font-semibold text-slate-900 mb-6">Financial Summary</h3>
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <PieChart className="h-4 w-4 text-slate-400" />
-                <span className="text-sm text-slate-600">Base Salary</span>
-              </div>
-              <span className="text-sm font-semibold text-slate-900">$38,500</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-slate-400" />
-                <span className="text-sm text-slate-600">Allowances</span>
-              </div>
-              <span className="text-sm font-semibold text-slate-900">$4,200</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 text-slate-400" />
-                <span className="text-sm text-slate-600">Deductions</span>
-              </div>
-              <span className="text-sm font-semibold text-red-600">-$2,500</span>
-            </div>
-            <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-              <span className="text-sm font-bold text-slate-900">Net Payable</span>
-              <span className="text-lg font-bold text-indigo-600">$40,200</span>
+        <section className="section-card">
+          <div className="section-header">
+            <div>
+              <h2 className="section-title">Financial summary</h2>
+              <p className="section-description">Top-level breakdown of the active payroll run.</p>
             </div>
           </div>
-        </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between rounded-xl border border-border-base bg-paper-sunken/25 px-4 py-4">
+              <div className="flex items-center gap-3">
+                <PieChart className="h-4 w-4 text-accent-base" />
+                <span className="text-sm text-ink-base">Base salary</span>
+              </div>
+              <span className="text-sm font-semibold text-ink-base">$38,500</span>
+            </div>
+            <div className="flex items-center justify-between rounded-xl border border-border-base bg-paper-sunken/25 px-4 py-4">
+              <div className="flex items-center gap-3">
+                <TrendingUp className="h-4 w-4 text-accent-base" />
+                <span className="text-sm text-ink-base">Allowances</span>
+              </div>
+              <span className="text-sm font-semibold text-ink-base">$4,200</span>
+            </div>
+            <div className="flex items-center justify-between rounded-xl border border-border-base bg-paper-sunken/25 px-4 py-4">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="h-4 w-4 text-error-base" />
+                <span className="text-sm text-ink-base">Deductions</span>
+              </div>
+              <span className="text-sm font-semibold text-error-base">-$2,500</span>
+            </div>
+            <div className="rounded-xl border border-border-base bg-paper-raised px-4 py-4 shadow-sm">
+              <p className="text-xs uppercase tracking-[0.18em] text-ink-muted">Net payable</p>
+              <p className="mt-2 text-2xl font-bold tracking-tight text-accent-base">$40,200</p>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   );

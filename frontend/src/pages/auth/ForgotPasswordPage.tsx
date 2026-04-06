@@ -1,15 +1,16 @@
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Link } from 'react-router-dom';
 import { useState } from 'react';
-import { api } from '../../lib/api';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { ArrowRight, Mail } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { Link } from 'react-router-dom';
+import { z } from 'zod';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { toast } from '../../components/ui/Toaster';
+import { api } from '../../lib/api';
 
 const forgotPasswordSchema = z.object({
-  email: z.string().email('Invalid email address'),
+  email: z.string().email('Enter a valid email address'),
 });
 
 type ForgotPasswordForm = z.infer<typeof forgotPasswordSchema>;
@@ -30,7 +31,7 @@ export default function ForgotPasswordPage() {
     setIsLoading(true);
     try {
       const response = await api.post('/auth/forgot-password', data);
-      toast.success('Reset token generated (Check console for testing)');
+      toast.success('Reset instructions generated for this account');
       console.log('Reset Token:', response.data.reset_token);
       setIsSubmitted(true);
     } catch (error: any) {
@@ -42,12 +43,14 @@ export default function ForgotPasswordPage() {
 
   if (isSubmitted) {
     return (
-      <div className="text-center space-y-4">
-        <div className="bg-green-50 text-green-800 p-4 rounded-lg border border-green-200">
-          If an account exists for that email, we've sent instructions to reset your password.
+      <div className="space-y-6">
+        <div className="rounded-2xl border border-success-base/20 bg-success-base/10 px-5 py-5 text-sm leading-7 text-ink-muted">
+          If an account exists for that email address, reset instructions have been generated. For
+          local testing, the token is also printed to the console.
         </div>
-        <Link to="/auth/login" className="block text-sm font-medium text-indigo-600 hover:text-indigo-500">
-          Back to Login
+        <Link to="/auth/login" className="inline-flex items-center gap-2 text-sm font-medium text-accent-base hover:underline">
+          Back to sign in
+          <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
     );
@@ -55,28 +58,32 @@ export default function ForgotPasswordPage() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <p className="text-sm text-slate-600">
-        Enter your email address and we'll send you a link to reset your password.
-      </p>
-      
+      <div className="space-y-2">
+        <h2 className="text-2xl font-bold tracking-tight text-ink-base">Forgot your password?</h2>
+        <p className="text-sm leading-7 text-ink-muted">
+          Enter your work email and we&apos;ll generate reset instructions for your account.
+        </p>
+      </div>
+
       <Input
         label="Email address"
         type="email"
-        placeholder="user@hrms.com"
+        placeholder="name@company.com"
+        icon={<Mail className="h-4 w-4" />}
         {...register('email')}
         error={errors.email?.message}
       />
 
       <Button type="submit" className="w-full" isLoading={isLoading}>
-        Send Reset Link
+        Send reset instructions
       </Button>
 
-      <p className="text-center text-sm text-slate-600">
+      <div className="rounded-2xl border border-border-base bg-paper-sunken/30 px-4 py-4 text-sm text-ink-muted">
         Remembered your password?{' '}
-        <Link to="/auth/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+        <Link to="/auth/login" className="font-semibold text-accent-base hover:underline">
           Sign in
         </Link>
-      </p>
+      </div>
     </form>
   );
 }

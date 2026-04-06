@@ -86,14 +86,55 @@ export default function App() {
             >
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPage />} />
-              <Route path="users" element={<UserManagementPage />} />
-              <Route path="departments" element={<DepartmentsPage />} />
-              <Route path="employee-roles" element={<EmployeeRolesPage />} />
-              <Route path="employees" element={<EmployeesPage />} />
-              <Route path="employees/:id" element={<EmployeeDetailsPage />} />
-              <Route path="payroll" element={<PayrollPage />} />
-              <Route path="leave" element={<LeaveManagementPage />} />
-              <Route path="leave/calendar" element={<LeaveCalendarPage />} />
+              
+              <Route path="users" element={
+                <ProtectedRoute permission="user.view">
+                  <UserManagementPage />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="departments" element={
+                <ProtectedRoute permission="department.view">
+                  <DepartmentsPage />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="employee-roles" element={
+                <ProtectedRoute permission="employee_role.view">
+                  <EmployeeRolesPage />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="employees" element={
+                <ProtectedRoute permission="employee.create">
+                  <EmployeesPage />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="employees/:id" element={
+                <ProtectedRoute permission="employee.view">
+                  <EmployeeDetailsPage />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="payroll" element={
+                <ProtectedRoute permission="payslip.view">
+                  <PayrollPage />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="leave" element={
+                <ProtectedRoute permission="leave_request.view">
+                  <LeaveManagementPage />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="leave/calendar" element={
+                <ProtectedRoute permission="leave_request.view">
+                  <LeaveCalendarPage />
+                </ProtectedRoute>
+              } />
+              
               <Route path="profile" element={<ProfilePage />} />
               
               {/* Other modules will be added here */}

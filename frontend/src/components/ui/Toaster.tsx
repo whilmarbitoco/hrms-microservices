@@ -72,15 +72,15 @@ export function Toaster() {
         {toasts.map((t) => (
           <motion.div
             key={t.id}
-            initial={{ opacity: 0, x: 20, scale: 0.95 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: 20, scale: 0.95 }}
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
             className={cn(
-              "flex items-start gap-3 rounded-lg border p-4 shadow-lg w-full",
-              t.type === 'success' && "bg-green-50 border-green-200 text-green-800",
-              t.type === 'error' && "bg-red-50 border-red-200 text-red-800",
-              t.type === 'info' && "bg-blue-50 border-blue-200 text-blue-800",
-              t.type === 'warning' && "bg-yellow-50 border-yellow-200 text-yellow-800"
+              "flex items-start gap-3 rounded-lg border p-4 shadow-lg w-full bg-paper-raised",
+              t.type === 'success' && "border-success-base/30 text-success-base",
+              t.type === 'error' && "border-error-base/30 text-error-base",
+              t.type === 'info' && "border-accent-base/30 text-accent-base",
+              t.type === 'warning' && "border-warning-base/30 text-warning-base"
             )}
           >
             <div className="mt-0.5">
@@ -91,17 +91,17 @@ export function Toaster() {
             </div>
             
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium">
-                {typeof t.message === 'object' && t.message?.error ? t.message.error : 'Notification'}
+              <div className="text-sm font-bold">
+                {t.type.charAt(0).toUpperCase() + t.type.slice(1)}
               </div>
-              <div className="text-xs opacity-90">
+              <div className="text-xs text-ink-muted font-medium mt-0.5">
                 {renderMessage(t.message)}
               </div>
             </div>
             
             <button
               onClick={() => removeToast(t.id)}
-              className="rounded-md p-1 hover:bg-black/5"
+              className="rounded-md p-1 hover:bg-paper-sunken text-ink-faint hover:text-ink-base transition-colors"
             >
               <X className="h-4 w-4" />
             </button>
