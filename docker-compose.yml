@@ -137,25 +137,6 @@ services:
       - "traefik.http.routers.leave-ms.tls.certresolver=letsencrypt"
       - "traefik.http.services.leave-ms.loadbalancer.server.port=8000"
 
-  frontend:
-    build:
-      context: ./frontend
-      args:
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost}
-    networks:
-      - dokploy-network
-    depends_on:
-      auth-ms:
-        condition: service_started
-      employee-ms:
-        condition: service_started
-      payroll-ms:
-        condition: service_started
-      leave-ms:
-        condition: service_started
-    ports:
-      - "${FRONTEND_PORT:-3000}:80"
-    restart: unless-stopped
 
 volumes:
   rabbitmq_data:
