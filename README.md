@@ -2,7 +2,7 @@
 
 > A production-grade, containerized, event-driven Human Resource Management System built with Flask microservices.
 
-**Project Status — March 31, 2026**
+**Project Status — April 06, 2026**
 
 You can read the api docs [here](ROUTES.md) or access the web app: `https://hrms.whilmarbitoco.qzz.io/`.
 
@@ -36,14 +36,43 @@ None.
 
 ---
 
+## Startup Migrations And Seeds
+
+Each microservice includes its own `seed.sql`:
+
+- [auth-ms/seed.sql](/C:/Users/mwioc/opt/hrms-microservice/auth-ms/seed.sql)
+- [employee-ms/seed.sql](/C:/Users/mwioc/opt/hrms-microservice/employee-ms/seed.sql)
+- [leave-ms/seed.sql](/C:/Users/mwioc/opt/hrms-microservice/leave-ms/seed.sql)
+- [payroll-ms/seed.sql](/C:/Users/mwioc/opt/hrms-microservice/payroll-ms/seed.sql)
+
+When `FORCE_MIGRATE=true`, each service will:
+
+1. wait for its database
+2. drop and recreate the `public` schema
+3. run `flask db upgrade`
+4. run `/app/seed.sql`
+5. start Gunicorn
+
+This is destructive. It wipes the current database state for each microservice before migrating and seeding.
+
+Example:
+
+```env
+FORCE_MIGRATE=true
+```
+
+Set `FORCE_MIGRATE=false` for normal restarts.
+
+---
+
 ## Seeded Credentials
 
 The auth seed creates these default users:
 
-| Role | Email | Password | Employee ID |
-| ---- | ----- | -------- | ----------- |
-| Admin | `admin@hrms.com` | `Admin@1234` | `NULL` |
-| HR Manager | `hr@hrms.com` | `Hr@1234` | `EMP004` |
-| Employee | `employee1@hrms.com` | `EmpOne@1234` | `EMP001` |
-| Employee | `employee2@hrms.com` | `EmpTwo@1234` | `EMP002` |
-| Employee | `employee3@hrms.com` | `EmpThree@1234` | `EMP003` |
+| Role       | Email                | Password        | Employee ID |
+| ---------- | -------------------- | --------------- | ----------- |
+| Admin      | `admin@hrms.com`     | `Admin@1234`    | `NULL`      |
+| HR Manager | `hr@hrms.com`        | `Hr@1234`       | `EMP004`    |
+| Employee   | `employee1@hrms.com` | `EmpOne@1234`   | `EMP001`    |
+| Employee   | `employee2@hrms.com` | `EmpTwo@1234`   | `EMP002`    |
+| Employee   | `employee3@hrms.com` | `EmpThree@1234` | `EMP003`    |

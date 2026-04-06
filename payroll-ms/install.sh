@@ -12,6 +12,9 @@ echo "[+] Database is up"
 case "${FORCE_MIGRATE:-false}" in
   true|TRUE|1|yes|YES)
     echo "[!] FORCE_MIGRATE is enabled"
+    echo "[!] Resetting database schema..."
+    psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public;"
+
     echo "[!] Running migrations..."
     flask db upgrade
 
