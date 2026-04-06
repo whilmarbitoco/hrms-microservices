@@ -13,6 +13,7 @@ case "${FORCE_MIGRATE:-false}" in
   true|TRUE|1|yes|YES)
     echo "[!] FORCE_MIGRATE is enabled"
     echo "[!] Running migrations..."
+    flask db stamp head
     flask db upgrade
 
     if [ -f /app/seed.sql ]; then
