@@ -1,0 +1,4 @@
+[submodule "frontend"]
+	path = frontend
+	url = https://github.com/whilmarbitoco/hrms-frontend.git
+	branch = main
