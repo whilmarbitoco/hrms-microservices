@@ -10,7 +10,7 @@ import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { UserPlus, Shield, UserX, UserCheck } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { ROLE_LABELS_BY_NAME, ROLE_NAMES, ROLES } from '../../constants';
+import { ROLE_LABELS_BY_NAME, ROLE_OPTIONS, ROLES } from '../../constants';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -167,13 +167,10 @@ export default function UserManagementPage() {
           />
           <Select 
             label="Role" 
+            options={ROLE_OPTIONS.map((role) => ({ label: role.label, value: role.id }))}
             {...register('role_id')} 
             error={errors.role_id?.message}
-          >
-            {Object.entries(ROLE_NAMES).map(([id, name]) => (
-              <option key={id} value={id}>{name}</option>
-            ))}
-          </Select>
+          />
           <div className="flex justify-end gap-3 pt-4">
             <Button variant="outline" type="button" onClick={() => setIsCreateModalOpen(false)}>Cancel</Button>
             <Button type="submit" isLoading={createUserMutation.isPending}>Create User</Button>

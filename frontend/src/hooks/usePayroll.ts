@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { toast } from '../components/ui/Toaster';
 
@@ -28,16 +28,15 @@ export interface Payslip {
   deductions: string;
   net: string;
   status: 'generated' | 'sent' | 'acknowledged';
-  employee_name?: string;
+  generated_at?: string;
 }
 
-// Salary Components
 export const useSalaryComponents = (employeeId?: string) => {
   return useQuery<SalaryComponent[]>({
     queryKey: ['salary-components', employeeId],
     queryFn: async () => {
-      const url = employeeId 
-        ? `/payroll/salary-components/employee/${employeeId}` 
+      const url = employeeId
+        ? `/payroll/salary-components/employee/${employeeId}`
         : '/payroll/salary-components';
       const { data } = await api.get(url);
       return data;
@@ -66,7 +65,7 @@ export const useUpdateSalaryComponent = () => {
       const { data } = await api.patch(`/payroll/salary-components/${id}`, payload);
       return data;
     },
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['salary-components'] });
       toast.success('Salary component updated');
     },
@@ -87,14 +86,14 @@ export const useDeleteSalaryComponent = () => {
   });
 };
 
-// Payroll Batches
-export const usePayrollBatches = () => {
+export const usePayrollBatches = (enabled = true) => {
   return useQuery<PayrollBatch[]>({
     queryKey: ['payroll-batches'],
     queryFn: async () => {
       const { data } = await api.get('/payroll/batches');
       return data;
     },
+    enabled,
   });
 };
 
@@ -130,8 +129,7 @@ export const useProcessPayrollBatch = () => {
   });
 };
 
-// Payslips
-export const usePayslips = (batchId?: number) => {
+export const usePayslips = (batchId?: number, enabled = true) => {
   return useQuery<Payslip[]>({
     queryKey: ['payslips', batchId],
     queryFn: async () => {
@@ -139,6 +137,17 @@ export const usePayslips = (batchId?: number) => {
       const { data } = await api.get(url);
       return data;
     },
-    enabled: !!batchId,
+    enabled: enabled && !!batchId,
+  });
+};
+
+export const useEmployeePayslips = (employeeId?: string, enabled = true) => {
+  return useQuery<Payslip[]>({
+    queryKey: ['employee-payslips', employeeId],
+    queryFn: async () => {
+      const { data } = await api.get(`/payroll/payslips/employee/${employeeId}`);
+      return data;
+    },
+    enabled: enabled && Boolean(employeeId),
   });
 };

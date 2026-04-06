@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useLeaveCalendarRange } from '../../hooks/useLeave';
+import { useLeaveCalendar } from '../../hooks/useLeave';
 import { Loader } from '../../components/ui/Loader';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { cn, formatDate } from '../../lib/utils';
@@ -17,7 +17,7 @@ export default function LeaveCalendarPage() {
   const monthName = currentDate.toLocaleString('default', { month: 'long' });
   const fromDate = `${year}-${String(month + 1).padStart(2, '0')}-01`;
   const toDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(daysInMonth(year, month)).padStart(2, '0')}`;
-  const { data: events, isLoading, isError, error, refetch } = useLeaveCalendarRange(fromDate, toDate);
+  const { data: events, isLoading, isError, error, refetch } = useLeaveCalendar(fromDate, toDate);
 
   const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
   const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
@@ -104,9 +104,9 @@ export default function LeaveCalendarPage() {
                         <div 
                           key={eIdx}
                           className="px-1.5 py-0.5 rounded bg-indigo-50 border-l-2 border-indigo-500 text-[10px] text-indigo-700 truncate"
-                          title={`${event.employee_name} - ${event.policy_name}`}
+                          title={`${event.employee_id} - ${event.policy?.name ?? `Policy #${event.policy_id}`}`}
                         >
-                          <span className="font-bold">{event.employee_name}</span>
+                          <span className="font-bold">{event.employee_id}</span>
                         </div>
                       ))}
                     </div>
@@ -133,7 +133,7 @@ export default function LeaveCalendarPage() {
                   <User className="h-4 w-4" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-900">{event.employee_name}</p>
+                  <p className="text-sm font-medium text-slate-900">{event.employee_id}</p>
                   <p className="text-xs text-slate-500">{formatDate(event.start_date)} - {formatDate(event.end_date)}</p>
                 </div>
               </div>

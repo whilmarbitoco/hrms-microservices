@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { toast } from '../components/ui/Toaster';
 
@@ -16,8 +16,12 @@ export interface LeaveBalance {
   employee_id: string;
   policy_id: number;
   balance: string;
-  policy_name?: string;
-  policy_type?: string;
+  accrued_at?: string;
+  policy?: {
+    id: number;
+    name: string;
+    type: string;
+  } | null;
 }
 
 export interface LeaveRequest {
@@ -26,14 +30,20 @@ export interface LeaveRequest {
   policy_id: number;
   start_date: string;
   end_date: string;
-  reason?: string;
+  days: string;
+  reason?: string | null;
   status: 'pending' | 'approved' | 'rejected' | 'cancelled';
-  employee_name?: string;
-  policy_name?: string;
-  total_days?: number;
+  reviewed_by?: string | null;
+  reviewed_at?: string | null;
+  policy?: {
+    id: number;
+    name: string;
+    type: string;
+  } | null;
 }
 
-// Leave Policies
+type LeaveRequestFilters = Record<string, string | number | undefined>;
+
 export const useLeavePolicies = () => {
   return useQuery<LeavePolicy[]>({
     queryKey: ['leave-policies'],
@@ -44,7 +54,6 @@ export const useLeavePolicies = () => {
   });
 };
 
-// Leave Balances
 export const useLeaveBalances = (employeeId?: string) => {
   return useQuery<LeaveBalance[]>({
     queryKey: ['leave-balances', employeeId],
@@ -53,17 +62,18 @@ export const useLeaveBalances = (employeeId?: string) => {
       const { data } = await api.get(url);
       return data;
     },
+    enabled: employeeId !== '',
   });
 };
 
-// Leave Requests
-export const useLeaveRequests = (params?: any) => {
+export const useLeaveRequests = (params?: LeaveRequestFilters, enabled = true) => {
   return useQuery<LeaveRequest[]>({
     queryKey: ['leave-requests', params],
     queryFn: async () => {
       const { data } = await api.get('/leave/requests', { params });
       return data;
     },
+    enabled,
   });
 };
 
@@ -97,6 +107,9 @@ export const useApproveLeaveRequest = () => {
       queryClient.invalidateQueries({ queryKey: ['leave-balances'] });
       toast.success('Leave request approved');
     },
+    onError: (error: any) => {
+      toast.error(error);
+    },
   });
 };
 
@@ -111,19 +124,31 @@ export const useRejectLeaveRequest = () => {
       queryClient.invalidateQueries({ queryKey: ['leave-requests'] });
       toast.success('Leave request rejected');
     },
-  });
-};
-
-export const useLeaveCalendar = () => {
-  return useQuery<LeaveRequest[]>({
-    queryKey: ['leave-calendar'],
-    queryFn: async () => {
-      const { data } = await api.get('/leave/requests/calendar');
-      return data;
+    onError: (error: any) => {
+      toast.error(error);
     },
   });
 };
-export const useLeaveCalendarRange = (fromDate: string, toDate: string, departmentId?: string) => {
+
+export const useCancelLeaveRequest = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const { data } = await api.post(`/leave/requests/${id}/cancel`);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['leave-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['leave-balances'] });
+      toast.success('Leave request cancelled');
+    },
+    onError: (error: any) => {
+      toast.error(error);
+    },
+  });
+};
+
+export const useLeaveCalendar = (fromDate: string, toDate: string, departmentId?: string) => {
   return useQuery<LeaveRequest[]>({
     queryKey: ['leave-calendar', fromDate, toDate, departmentId],
     queryFn: async () => {

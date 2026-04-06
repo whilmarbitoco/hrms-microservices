@@ -1,6 +1,8 @@
-import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 
-const API_BASE_URL = "https://hrms-api.whilmarbitoco.qzz.io"
+const API_BASE_URL =
+  (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/?$/, "/") ??
+  "https://hrms-api.whilmarbitoco.qzz.io/";
 
 type RetriableRequest = InternalAxiosRequestConfig & { _retry?: boolean };
 
@@ -8,12 +10,12 @@ export const api = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token');
+  const token = localStorage.getItem("access_token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -32,18 +34,19 @@ api.interceptors.response.use(
         const { data } = await axios.post<{ access_token: string }>(
           `${API_BASE_URL}auth/refresh`,
           {},
-          { withCredentials: true }
+          { withCredentials: true },
         );
-        localStorage.setItem('access_token', data.access_token);
+
+        localStorage.setItem("access_token", data.access_token);
         originalRequest.headers.Authorization = `Bearer ${data.access_token}`;
         return api(originalRequest);
       } catch (refreshError) {
-        localStorage.removeItem('access_token');
-        window.location.href = '/auth/login';
+        localStorage.removeItem("access_token");
+        window.location.href = "/auth/login";
         return Promise.reject(refreshError);
       }
     }
 
     return Promise.reject(error.response?.data ?? error);
-  }
+  },
 );
