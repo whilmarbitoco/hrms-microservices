@@ -4,7 +4,7 @@
 
 **Project Status — March 31, 2026**
 
-You can read the api docs [here](ROUTES.md) or directly test the api here: `https://hrms-api.whilmarbitoco.qzz.io/`.
+You can read the api docs [here](ROUTES.md) or access the web app: `https://hrms.whilmarbitoco.qzz.io/`.
 
 ---
 
@@ -33,3 +33,17 @@ You can read the api docs [here](ROUTES.md) or directly test the api here: `http
 ## Known Bugs
 
 None.
+
+---
+
+## Seeded Credentials
+
+The auth seed creates these default users:
+
+| Role | Email | Password | Employee ID |
+| ---- | ----- | -------- | ----------- |
+| Admin | `admin@hrms.com` | `Admin@1234` | `NULL` |
+| HR Manager | `hr@hrms.com` | `Hr@1234` | `EMP004` |
+| Employee | `employee1@hrms.com` | `EmpOne@1234` | `EMP001` |
+| Employee | `employee2@hrms.com` | `EmpTwo@1234` | `EMP002` |
+| Employee | `employee3@hrms.com` | `EmpThree@1234` | `EMP003` |

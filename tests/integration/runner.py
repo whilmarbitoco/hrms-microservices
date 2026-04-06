@@ -5,9 +5,10 @@ Runs real HTTP requests against the live stack through NGINX.
 
 Prerequisites:
     1. docker compose up --build
-    2. python tests/seed.py
-    3. set HRMS_TOKEN=<token from seed output>   (Windows)
-       export HRMS_TOKEN=<token>                 (Linux/Mac)
+    2. start the stack with FORCE_MIGRATE=true so the service seed.sql files run
+    3. log in via POST /auth/login and copy the returned access token
+    4. set HRMS_TOKEN=<access token>   (Windows)
+       export HRMS_TOKEN=<access token> (Linux/Mac)
 
 Usage (run from project root):
     call tests\.venv\Scripts\activate.bat
@@ -65,7 +66,7 @@ def main():
     if not os.getenv("HRMS_TOKEN"):
         print(f"{Fore.RED}Error: HRMS_TOKEN environment variable is not set.")
         print(
-            f"Run 'python tests/seed.py' first and export the token.{Style.RESET_ALL}"
+            f"Start the stack with FORCE_MIGRATE=true, then log in and export the token.{Style.RESET_ALL}"
         )
         sys.exit(1)
 
