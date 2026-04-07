@@ -61,7 +61,7 @@ export default function LeaveManagementPage() {
 
   const requestsQuery = useLeaveRequests(requestFilters);
   const balancesQuery = useLeaveBalances(isEmployee ? user?.employee_id ?? undefined : undefined);
-  const { data: policies } = useLeavePolicies();
+  const policiesQuery = useLeavePolicies();
   const createMutation = useCreateLeaveRequest();
   const approveMutation = useApproveLeaveRequest();
   const rejectMutation = useRejectLeaveRequest();
@@ -133,6 +133,7 @@ export default function LeaveManagementPage() {
 
   const requests = requestsQuery.data ?? [];
   const balances = balancesQuery.data ?? [];
+  const policies = policiesQuery.data ?? [];
 
   return (
     <div className="page-shell">
@@ -388,14 +389,27 @@ export default function LeaveManagementPage() {
               label="Leave policy"
               options={[
                 { label: 'Select leave policy', value: '' },
-                ...(policies?.map((policy) => ({
+                ...policies.map((policy) => ({
                   label: policy.name,
                   value: policy.id.toString(),
-                })) || []),
+                })),
               ]}
               {...register('policy_id')}
               error={errors.policy_id?.message}
+              disabled={policiesQuery.isLoading || policiesQuery.isError || policies.length === 0}
             />
+
+            {policiesQuery.isError && (
+              <p className="text-sm text-error-base">
+                Leave policies could not be loaded. Your account may be missing the `leave_policy.view` permission.
+              </p>
+            )}
+
+            {!policiesQuery.isLoading && !policiesQuery.isError && policies.length === 0 && (
+              <p className="text-sm text-ink-muted">
+                No leave policies are available yet. Ask HR to create or seed leave policies first.
+              </p>
+            )}
 
             <div className="grid gap-5 md:grid-cols-2">
               <Input label="Start date" type="date" {...register('start_date')} error={errors.start_date?.message} />

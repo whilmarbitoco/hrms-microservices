@@ -93,7 +93,7 @@ JOIN permissions p ON p.name IN (
     'employee.view',
     'payslip.view',
     'leave_request.view', 'leave_request.create', 'leave_request.update',
-    'leave_request.cancel', 'leave_balance.view'
+    'leave_request.cancel', 'leave_balance.view', 'leave_policy.view'
 )
 WHERE r.name = 'employee'
 ON CONFLICT DO NOTHING;
