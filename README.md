@@ -49,6 +49,8 @@ The auth seed creates these default users:
 | Employee   | `employee2@hrms.com` | `EmpTwo@1234`   | `EMP002`    |
 | Employee   | `employee3@hrms.com` | `EmpThree@1234` | `EMP003`    |
 
+---
+
 ## LICENSE
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
