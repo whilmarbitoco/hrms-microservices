@@ -121,6 +121,8 @@ export const useProcessPayrollBatch = () => {
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ['payroll-batches'] });
       queryClient.invalidateQueries({ queryKey: ['payroll-batches', id] });
+      queryClient.invalidateQueries({ queryKey: ['employee-payslips'] });
+      queryClient.invalidateQueries({ queryKey: ['payslips'] });
       toast.success('Payroll processed successfully');
     },
     onError: (error: any) => {

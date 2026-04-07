@@ -21,7 +21,7 @@ You can read the API docs [here](ROUTES.md) or access the web app at [https://hr
 - **Per-Service Migration + Seed Flow** - each microservice owns its own `seed.sql`; with `FORCE_MIGRATE=true`, startup wipes the owned schema, rebuilds tables, runs migrations/bootstrap creation, and seeds fresh data automatically
 - **Integration Test Suite** - 89 endpoints exercised via real HTTP through NGINX (`tests/integration/runner.py`)
 - **Unit Test Suites** - 141 pytest tests across all 4 backend services
-- **Add Frontend** - Added a simple web app.
+- **Add Frontend** - Added a simple web app. You can access the frontend repository [here](https://github.com/whilmarbitoco/hrms-frontend).
 
 ---
 
@@ -48,3 +48,7 @@ The auth seed creates these default users:
 | Employee   | `employee1@hrms.com` | `EmpOne@1234`   | `EMP001`    |
 | Employee   | `employee2@hrms.com` | `EmpTwo@1234`   | `EMP002`    |
 | Employee   | `employee3@hrms.com` | `EmpThree@1234` | `EMP003`    |
+
+## LICENSE
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
