@@ -3,35 +3,35 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import { Toaster } from './components/ui/Toaster';
+import React from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import { Toaster } from "./components/ui/Toaster";
 
 // Layouts
-import MainLayout from './layouts/MainLayout';
-import AuthLayout from './layouts/AuthLayout';
+import MainLayout from "./layouts/MainLayout";
+import AuthLayout from "./layouts/AuthLayout";
 
 // Auth Pages
-import LoginPage from './pages/auth/LoginPage';
-import RegisterPage from './pages/auth/RegisterPage';
-import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
-import ResetPasswordPage from './pages/auth/ResetPasswordPage';
+import LoginPage from "./pages/auth/LoginPage";
+import RegisterPage from "./pages/auth/RegisterPage";
+import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 
 // Dashboard
-import DashboardPage from './pages/DashboardPage';
+import DashboardPage from "./pages/DashboardPage";
 
 // Modules
-import UserManagementPage from './pages/users/UserManagementPage';
-import DepartmentsPage from './pages/departments/DepartmentsPage';
-import EmployeeRolesPage from './pages/roles/EmployeeRolesPage';
-import EmployeesPage from './pages/employees/EmployeesPage';
-import EmployeeDetailsPage from './pages/employees/EmployeeDetailsPage';
-import PayrollPage from './pages/payroll/PayrollPage';
-import LeaveManagementPage from './pages/leave/LeaveManagementPage';
-import LeaveCalendarPage from './pages/leave/LeaveCalendarPage';
-import ProfilePage from './pages/auth/ProfilePage';
+import UserManagementPage from "./pages/users/UserManagementPage";
+import DepartmentsPage from "./pages/departments/DepartmentsPage";
+import EmployeeRolesPage from "./pages/roles/EmployeeRolesPage";
+import EmployeesPage from "./pages/employees/EmployeesPage";
+import EmployeeDetailsPage from "./pages/employees/EmployeeDetailsPage";
+import PayrollPage from "./pages/payroll/PayrollPage";
+import LeaveManagementPage from "./pages/leave/LeaveManagementPage";
+import LeaveCalendarPage from "./pages/leave/LeaveCalendarPage";
+import ProfilePage from "./pages/auth/ProfilePage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -43,7 +43,13 @@ const queryClient = new QueryClient({
   },
 });
 
-function ProtectedRoute({ children, permission }: { children: React.ReactNode; permission?: string }) {
+function ProtectedRoute({
+  children,
+  permission,
+}: {
+  children: React.ReactNode;
+  permission?: string;
+}) {
   const { user, isLoading, hasPermission } = useAuth();
 
   if (isLoading) {
@@ -65,7 +71,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <BrowserRouter>
+        <HashRouter>
           <Routes>
             {/* Auth Routes */}
             <Route path="/auth" element={<AuthLayout />}>
@@ -86,63 +92,87 @@ export default function App() {
             >
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPage />} />
-              
-              <Route path="users" element={
-                <ProtectedRoute permission="user.view">
-                  <UserManagementPage />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="departments" element={
-                <ProtectedRoute permission="department.view">
-                  <DepartmentsPage />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="employee-roles" element={
-                <ProtectedRoute permission="employee_role.view">
-                  <EmployeeRolesPage />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="employees" element={
-                <ProtectedRoute permission="employee.create">
-                  <EmployeesPage />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="employees/:id" element={
-                <ProtectedRoute permission="employee.view">
-                  <EmployeeDetailsPage />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="payroll" element={
-                <ProtectedRoute permission="payslip.view">
-                  <PayrollPage />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="leave" element={
-                <ProtectedRoute permission="leave_request.view">
-                  <LeaveManagementPage />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="leave/calendar" element={
-                <ProtectedRoute permission="leave_request.view">
-                  <LeaveCalendarPage />
-                </ProtectedRoute>
-              } />
-              
+
+              <Route
+                path="users"
+                element={
+                  <ProtectedRoute permission="user.view">
+                    <UserManagementPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="departments"
+                element={
+                  <ProtectedRoute permission="department.view">
+                    <DepartmentsPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="employee-roles"
+                element={
+                  <ProtectedRoute permission="employee_role.view">
+                    <EmployeeRolesPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="employees"
+                element={
+                  <ProtectedRoute permission="employee.create">
+                    <EmployeesPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="employees/:id"
+                element={
+                  <ProtectedRoute permission="employee.view">
+                    <EmployeeDetailsPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="payroll"
+                element={
+                  <ProtectedRoute permission="payslip.view">
+                    <PayrollPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="leave"
+                element={
+                  <ProtectedRoute permission="leave_request.view">
+                    <LeaveManagementPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="leave/calendar"
+                element={
+                  <ProtectedRoute permission="leave_request.view">
+                    <LeaveCalendarPage />
+                  </ProtectedRoute>
+                }
+              />
+
               <Route path="profile" element={<ProfilePage />} />
-              
+
               {/* Other modules will be added here */}
             </Route>
 
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
-        </BrowserRouter>
+        </HashRouter>
         <Toaster />
       </AuthProvider>
     </QueryClientProvider>
